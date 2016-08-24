@@ -18,20 +18,28 @@ def nn_classify(training_set, training_labels, new_example):
 
 
 def crop_new_image(images):
+	global refPt 
+	global cropping 
+	global image
 	refPt = []
 	cropping = False
-	global image
+	for i in range(0, len(images)):
+		# mostra thumbnails da images
+		image = cv2.imread(images[i])
+		cv2.namedWindow("image" + str(i), cv2.WINDOW_NORMAL)
+		cv2.imshow("image" + str(i), image)
+
 
 	for i in range(0, len(images)):
 		# Seta as chamadas de funcao dos eventos
 		image = cv2.imread(images[i])
 		clone = image.copy()
-		cv2.namedWindow("image", cv2.WINDOW_NORMAL)
-		cv2.setMouseCallback("image", click_and_crop)
+		cv2.namedWindow("CROP HERE", cv2.WINDOW_NORMAL)
+		cv2.setMouseCallback("CROP HERE", click_and_crop)
 
 		# Motor da  janela
 		while True:
-			cv2.imshow("image", image)
+			cv2.imshow("CROP HERE", image)
 			key = cv2.waitKey(1) & 0xFF
 
 			if key == ord("r"):
@@ -103,8 +111,8 @@ def crop_new_image(images):
 			roi = cv2.cvtColor(roi, cv2.COLOR_LAB2BGR)
 			cv2.imshow("ROI",roi)
 			cv2.waitKey(0)
-		cv2.destroyAllWindows() 
-
+		cv2.destroyWindow("CROP HERE") 
+	cv2.destroyAllWindows()
 
 #pega coordenadas do crop retangulo
 def click_and_crop(event, x, y, flags, param):
@@ -119,6 +127,6 @@ def click_and_crop(event, x, y, flags, param):
 		cropping = False
 
 		cv2.rectangle(image, refPt[0], refPt[1], (0,255,0), 2)
-		cv2.imshow("image", image)
+		cv2.imshow("CROP HERE", image)
 
 
