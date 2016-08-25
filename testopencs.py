@@ -15,14 +15,104 @@ def nn_classify(training_set, training_labels, new_example):
 	nearest = dists.argmin()
 	return training_labels[nearest]
 
+#pega coordenadas do crop retangulo
+def click_and_crop(event, x, y, flags, param):
+	global refPt, cropping
+
+	if event == cv2.EVENT_LBUTTONDOWN:
+		refPt.append((x,y))
+		cropping = True
+
+	elif event == cv2.EVENT_LBUTTONUP:
+		refPt.append((x,y))
+		cropping = False
+
+		cv2.rectangle(image, refPt[-2], refPt[-1], (0,255,0), 2)
+		cv2.imshow("CROP HERE", image)
+
+def extract_color_input(roi):
+	color_input = list()
+	for im in roi:
+		result = dict()
+
+		# Mudar espaco de cores
+		im = np.float32(im)
+		im = im / 255.0
+		im = cv2.cvtColor(im, cv2.COLOR_BGR2LAB)
+
+		# iterar os pixels
+		# cria um array em numpy
+		l,a,b = cv2.split(im)
+		
+		# valor l
+		l = np.average(l, axis=0)
+		l = np.average(l, axis=0)
+
+		# valor a
+		a = np.average(a, axis=0)
+		a = np.average(a, axis=0)
+		
+		# valor b
+		b = np.average(b, axis=0)
+		b = np.average(b, axis=0)
+
+		result['avg'] = list()
+		result['avg'].append(l)
+		result['avg'].append(a)
+		result['avg'].append(b)
+
+		# MIN
+		l,a,b = cv2.split(im)
+
+		l = np.min(l, axis=0)
+		l = np.min(l, axis=0)
+
+		# valor a
+		a = np.min(a, axis=0)
+		a = np.min(a, axis=0)
+		
+		# valor b
+		b = np.min(b, axis=0)
+		b = np.min(b, axis=0)
+
+		result['min'] = list()
+		result['min'].append(l)
+		result['min'].append(a)
+		result['min'].append(b)
+
+		# MAX
+		l,a,b = cv2.split(im)
+
+		l = np.max(l, axis=0)
+		l = np.max(l, axis=0)
+
+		# valor a
+		a = np.max(a, axis=0)
+		a = np.max(a, axis=0)
+		
+		# valor b
+		b = np.max(b, axis=0)
+		b = np.max(b, axis=0)
+
+		result['max'] = list()
+		result['max'].append(l)
+		result['max'].append(a)
+		result['max'].append(b)
+
+		color_input.append(result)
+	#Criando um NP Array para calculo dos canais 
+	arr = np.zeros((len(color_input), 3), dtype=np.float32)
+	for i in range(0,len(color_input)):
+		arr[i] = color_input[i]['avg']
+	return np.average(arr, axis=0)
 
 
 def crop_new_image(images):
 	global refPt 
 	global cropping 
 	global image
-	refPt = []
-	cropping = False
+	color_input_collection = []
+
 	for i in range(0, len(images)):
 		# mostra thumbnails da images
 		image = cv2.imread(images[i])
@@ -31,6 +121,9 @@ def crop_new_image(images):
 
 
 	for i in range(0, len(images)):
+		refPt = []
+		cropping = False
+
 		# Seta as chamadas de funcao dos eventos
 		image = cv2.imread(images[i])
 		clone = image.copy()
@@ -49,84 +142,14 @@ def crop_new_image(images):
 				break
 
 		# Pegou a imagem recortada
-		if len(refPt) == 2:
-			roi = clone[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
-			# ROI eh a imagem recortada
+		if len(refPt) >= 2:
+			# ROI eh um  vetor de imagens recortadas
+			roi = list()
+			for i in range(0, len(refPt), 2):
+				roi.append(clone[refPt[i][1]:refPt[i+1][1], refPt[i][0]:refPt[i+1][0]])
+			color_input = extract_color_input(roi)
 
-			# Mudar espaco de cores
-			roi = np.float32(roi)
-			roi = roi / 255.0
-			roi = cv2.cvtColor(roi, cv2.COLOR_BGR2LAB)
-
-			# iterar os pixels
-			# cria um array em numpy
-			l,a,b = cv2.split(roi)
-			
-			# valor l
-			l = np.average(l, axis=0)
-			l = np.average(l, axis=0)
-
-			# valor a
-			a = np.average(a, axis=0)
-			a = np.average(a, axis=0)
-			
-			# valor b
-			b = np.average(b, axis=0)
-			b = np.average(b, axis=0)
-
-			print 'avg: ',l, a, b
-
-			# MIN
-			l,a,b = cv2.split(roi)
-
-			l = np.min(l, axis=0)
-			l = np.min(l, axis=0)
-
-			# valor a
-			a = np.min(a, axis=0)
-			a = np.min(a, axis=0)
-			
-			# valor b
-			b = np.min(b, axis=0)
-			b = np.min(b, axis=0)
-
-			print 'min: ',l, a, b
-
-			# MAX
-			l,a,b = cv2.split(roi)
-
-			l = np.max(l, axis=0)
-			l = np.max(l, axis=0)
-
-			# valor a
-			a = np.max(a, axis=0)
-			a = np.max(a, axis=0)
-			
-			# valor b
-			b = np.max(b, axis=0)
-			b = np.max(b, axis=0)
-
-			print 'max: ',l, a, b
-
-			roi = cv2.cvtColor(roi, cv2.COLOR_LAB2BGR)
-			cv2.imshow("ROI",roi)
 			cv2.waitKey(0)
 		cv2.destroyWindow("CROP HERE") 
 	cv2.destroyAllWindows()
-
-#pega coordenadas do crop retangulo
-def click_and_crop(event, x, y, flags, param):
-	global refPt, cropping
-
-	if event == cv2.EVENT_LBUTTONDOWN:
-		refPt = [(x,y)]
-		cropping = True
-
-	elif event == cv2.EVENT_LBUTTONUP:
-		refPt.append((x,y))
-		cropping = False
-
-		cv2.rectangle(image, refPt[0], refPt[1], (0,255,0), 2)
-		cv2.imshow("CROP HERE", image)
-
 
