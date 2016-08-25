@@ -106,6 +106,11 @@ def extract_color_input(roi):
 		arr[i] = color_input[i]['avg']
 	return np.average(arr, axis=0)
 
+def merge_color_input(collection):
+	arr = np.zeros((len(collection), 3), dtype=np.float32)
+	for i in range(0, len(collection)):
+		arr[i] = collection[i]
+	return np.average(arr, axis=0)
 
 def crop_new_image(images):
 	global refPt 
@@ -147,9 +152,9 @@ def crop_new_image(images):
 			roi = list()
 			for i in range(0, len(refPt), 2):
 				roi.append(clone[refPt[i][1]:refPt[i+1][1], refPt[i][0]:refPt[i+1][0]])
-			color_input = extract_color_input(roi)
-
-			cv2.waitKey(0)
+			color_input_collection.append(extract_color_input(roi))
 		cv2.destroyWindow("CROP HERE") 
 	cv2.destroyAllWindows()
+	return merge_color_input(color_input_collection)
+
 
