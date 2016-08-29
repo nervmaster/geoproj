@@ -30,6 +30,7 @@ def click_and_crop(event, x, y, flags, param):
 		cv2.rectangle(image, refPt[-2], refPt[-1], (0,255,0), 2)
 		cv2.imshow("CROP HERE", image)
 
+#extrai propriedades de cor de uma imagem
 def extract_color_input(roi):
 	color_input = list()
 	for im in roi:
@@ -106,12 +107,14 @@ def extract_color_input(roi):
 		arr[i] = color_input[i]['avg']
 	return np.average(arr, axis=0)
 
+#converge as propriedades da colecao
 def merge_color_input(collection):
 	arr = np.zeros((len(collection), 3), dtype=np.float32)
 	for i in range(0, len(collection)):
 		arr[i] = collection[i]
 	return np.average(arr, axis=0)
 
+#faz a atividade de crop de uma colecao de imagens 
 def crop_new_image(images):
 	global refPt 
 	global cropping 
@@ -156,5 +159,3 @@ def crop_new_image(images):
 		cv2.destroyWindow("CROP HERE") 
 	cv2.destroyAllWindows()
 	return merge_color_input(color_input_collection)
-
-
