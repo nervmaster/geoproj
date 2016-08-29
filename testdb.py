@@ -3,26 +3,6 @@ import json
 import urllib
 from testopencs import crop_new_image
 
-# debug de testopencs
-images = list()
-images.append('./1.jpg')
-images.append('./2.jpg')
-images.append('./3.jpg')
-images.append('./4.jpg')
-images.append('./5.jpg')
-images.append('./6.jpg')
-images.append('./7.jpg')
-crop_new_image(images)
-
-exit(1)
-
-
-
-
-
-
-
-
 config = json.load(open('db.config'))
 
 # Conn remoto
@@ -88,6 +68,9 @@ for minerio in bd:
 			urllib.urlretrieve(foto['endereco'], image_path)
 			images.append(image_path)
 			counter = counter + 1
-		crop_new_image(images)
-			
+		image_arg = crop_new_image(images)
+		arg_list.append(image_arg)
+		label_list.append(minerio['minerio'])
+
+print label_list	
 
