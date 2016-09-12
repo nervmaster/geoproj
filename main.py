@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from toolbox import *
+from random import randint
 import numpy as np
+import os
+import cv2
+from sklearn.metrics import confusion_matrix
 
-#Iterar as pastas do dataset ALIGHOLLI
 
 #Criando uma array das labels
 def make_aligholi_training_label():
@@ -47,9 +50,75 @@ def make_aligholi_training_label():
 
 	return training_labels
 
+#dentro de um diretorio
+#iterar os arquivos XPL
+#fazer media geral xpl
+def make_xpl_avg_color(folder):
+	images = list()
+	for filename in os.listdir(folder):
+		if filename.startswith("x"):
+			im = cv2.imread(folder + filename)
+			images.append(extract_info(np.average, im))
+	return merge_array(np.average, images)
 
-#Pegar a media de cor de cada chapa
+def make_training_sets(collection, labels):
+	size = len(collection) / 10
+	result = dict()
+	result['new_entry_set'] = list()
+	result['new_entry_labels'] = list()
+	for i in range(0,size):
+		target = randint(0, len(collection)-1)
+		result['new_entry_set'].append(collection[target])
+		result['new_entry_labels'].append(labels[target])
+		del collection[target]
+		del labels[target]
+	result['labels'] = list()
+	result['labels'] = labels
 
-#verificar com o algoritmo de Vizinho Mais Proximo
+	result['training'] = list()
+	result['training'] = collection
+	
+	return result
 
-#randomizar testes para matriz de confusao
+
+
+
+# Cria as labels
+labels = make_aligholi_training_label()
+
+#Itera o dataset
+base_path = './MIfile/MI'
+all_set = list()
+for i in range(1, 84):
+	folder = base_path + str(i) + '/'
+	all_set.append(make_xpl_avg_color(folder))
+
+#matrix de confusao
+verd_list = list()
+pred_list = list()
+
+counter = 0
+correct = 0
+incorrect = 0
+
+for i in range(0,100):
+	#Criar o traning set
+	sets = make_training_sets(all_set, labels)
+
+	#verificar com o algoritmo de Vizinho Mais Proximo
+	for i in range(0, len(sets['new_entry_set'])):
+		pred = nn_classify(sets['training'], sets['labels'], sets['new_entry_set'][i])
+		verd = sets['new_entry_labels'][i]
+		if verd == pred:
+			correct += 1
+		else:
+			incorrect += 1
+		counter +=1
+
+		pred_list.append(pred)
+		verd_list.append(pred)
+
+#Matrix de confusao
+print confusion_matrix(verd_list, pred_list, labels = list(set(make_aligholi_training_label())))
+print float(float(correct)/float(counter)), '%'
+print correct, incorrect, counter

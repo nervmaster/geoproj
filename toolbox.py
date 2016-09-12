@@ -11,7 +11,7 @@ def distance(p0, p1):
 
 #Algoritmo de vizinho mais proximo
 def nn_classify(training_set, training_labels, new_entry):
-	dists = np.array([distance(t, new_example) for t in training_set])
+	dists = np.array([distance(t, new_entry) for t in training_set])
 	nearest = dists.argmin()
 	return training_labels[nearest]
 
