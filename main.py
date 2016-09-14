@@ -5,7 +5,9 @@ from random import randint
 import numpy as np
 import os
 import cv2
+import operator
 from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import normalize
 
 
 #Criando uma array das labels
@@ -53,13 +55,27 @@ def make_aligholi_training_label():
 #dentro de um diretorio
 #iterar os arquivos XPL
 #fazer media geral xpl
-def make_xpl_avg_color(folder):
+def make_avg_color(folder, light_type):
 	images = list()
 	for filename in os.listdir(folder):
-		if filename.startswith("x"):
+		if filename.startswith(light_type):
 			im = cv2.imread(folder + filename)
 			images.append(extract_info(np.average, im))
 	return merge_array(np.average, images)
+
+def make_pleochroism_color(folder, light_type):
+	images = list()
+	min_l = [200] * 3
+	max_l = [0] * 3
+	for filename in os.listdir(folder):
+		if filename.startswith(light_type):
+			im = cv2.imread(folder + filename)
+			im = extract_info(np.average, im)
+			if(im[0] < min_l[0]):
+				min_l = im
+			if(im[0] > max_l[0]):
+				max_l = im
+	return np.subtract(max_l, min_l)
 
 def make_training_sets(collection, labels):
 	size = len(collection) / 10
@@ -80,9 +96,6 @@ def make_training_sets(collection, labels):
 	
 	return result
 
-
-
-
 # Cria as labels
 labels = make_aligholi_training_label()
 
@@ -91,7 +104,18 @@ base_path = './MIfile/MI'
 all_set = list()
 for i in range(1, 84):
 	folder = base_path + str(i) + '/'
-	all_set.append(make_xpl_avg_color(folder))
+
+	xpl = make_avg_color(folder, 'x')
+	ppl = make_avg_color(folder, 'p')
+	biref = make_pleochroism_color(folder, 'x')
+	pleoc = make_pleochroism_color(folder, 'p')
+	
+	args = np.append(biref, xpl)
+	args = np.append(args, ppl)
+	args = np.append(args, pleoc)
+	
+	args = normalize(args[:, np.newaxis], axis = 0).ravel()
+	all_set.append(args)
 
 #matrix de confusao
 verd_list = list()
@@ -101,24 +125,27 @@ counter = 0
 correct = 0
 incorrect = 0
 
-for i in range(0,100):
+for i in range(0,1000):
+
+	t_set = all_set[:]
+	t_labels = labels[:]
+
 	#Criar o traning set
-	sets = make_training_sets(all_set, labels)
+	sets = make_training_sets(t_set, t_labels)
 
 	#verificar com o algoritmo de Vizinho Mais Proximo
-	for i in range(0, len(sets['new_entry_set'])):
-		pred = nn_classify(sets['training'], sets['labels'], sets['new_entry_set'][i])
-		verd = sets['new_entry_labels'][i]
+	for j in range(0, len(sets['new_entry_set'])):
+		pred = nn_classify(sets['training'], sets['labels'], sets['new_entry_set'][j])
+		verd = sets['new_entry_labels'][j]
 		if verd == pred:
 			correct += 1
 		else:
 			incorrect += 1
-		counter +=1
-
+		counter += 1
 		pred_list.append(pred)
-		verd_list.append(pred)
+		verd_list.append(verd)
 
 #Matrix de confusao
 print confusion_matrix(verd_list, pred_list, labels = list(set(make_aligholi_training_label())))
-print float(float(correct)/float(counter)), '%'
-print correct, incorrect, counter
+print float(float(correct)/float(counter))*100.0, '%'
+print 'dim', len(all_set[0])
