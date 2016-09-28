@@ -60,7 +60,7 @@ label_list = list()
 arg_list = list()
 
 for minerio in bd:
-	for chapa in minerio['chapas']:
+	for chapa in minerio['chapas'][-1]:
 		images = list()
 		counter = 0
 		for foto in chapa['fotos']:
@@ -72,5 +72,4 @@ for minerio in bd:
 		arg_list.append(image_arg)
 		label_list.append(minerio['minerio'])
 
-print label_list	
 

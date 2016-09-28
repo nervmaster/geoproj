@@ -2,7 +2,21 @@
 # -*- coding: utf-8 -*-
 
 import cv2
-import numpy as np 
+import numpy as np
+from skimage.feature import greycomatrix, greycoprops
+
+#Função de calcular os parâmetros de Textura
+def texture_param(image):
+	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	hist = greycomatrix(image, [1], [0], 256)
+	result = list()
+	props = ['contrast','homogeneity','energy','ASM']
+
+	for p in props:
+		result.append(greycoprops(hist, p))
+
+	return result
+
 
 #Função da distância euclidiana em um espaõ n-dimencional
 def distance(p0, p1):
@@ -30,11 +44,11 @@ def to_float_lab(image):
 #func -> funcao np para extrair a informacao
 #		- np.average
 #		- np.min
-#		- np.max 
+#		- np.max
 #image -> imagem ou ROI que vai ser extraido
 def extract_info(func, image):
 	l,a,b = cv2.split(image)
-	
+
 	l = func(l, axis=0)
 	l = func(l, axis=0)
 
@@ -42,7 +56,7 @@ def extract_info(func, image):
 	a = func(a, axis=0)
 
 	b = func(b, axis=0)
-	b = func(b, axis=0) 
+	b = func(b, axis=0)
 
 	result = list()
 	result.append(l)

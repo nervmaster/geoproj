@@ -93,8 +93,27 @@ def make_training_sets(collection, labels):
 
 	result['training'] = list()
 	result['training'] = collection
-	
+
 	return result
+
+def make_texture_param(folder):
+	images = list()
+	for filename in os.listdir(folder):
+		if filename.endswith('.png'):
+			im = cv2.imread(folder + filename)
+			images.append(texture_param(im))
+
+	result = np.zeros((4,4), dtype = np.float32)
+	for i in range(len(images[0])):
+		aux = np.zeros((len(images),4), dtype = np.float32)
+		for j in range(len(images)):
+			aux[j] = images[j][i]
+		result[i] = np.average(aux,axis=0)
+	return result
+
+
+
+
 
 # Cria as labels
 labels = make_aligholi_training_label()
@@ -109,12 +128,17 @@ for i in range(1, 84):
 	ppl = make_avg_color(folder, 'p')
 	biref = make_pleochroism_color(folder, 'x')
 	pleoc = make_pleochroism_color(folder, 'p')
-	
+
+	tex = make_texture_param(folder)
+
 	args = np.append(biref, xpl)
 	args = np.append(args, ppl)
 	args = np.append(args, pleoc)
-	
+	args = np.append(args, tex)
+
+
 	args = normalize(args[:, np.newaxis], axis = 0).ravel()
+
 	all_set.append(args)
 
 #matrix de confusao
