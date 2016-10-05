@@ -99,17 +99,16 @@ def make_training_sets(collection, labels):
 def make_texture_param(folder):
 	images = list()
 	for filename in os.listdir(folder):
-		if filename.endswith('.png'):
+		if filename.startswith('p'):
 			im = cv2.imread(folder + filename)
 			images.append(texture_param(im))
 
-	result = np.zeros((4,4), dtype = np.float32)
+	result = np.zeros((len(images),4), dtype = np.float32)
 	for i in range(len(images[0])):
-		aux = np.zeros((len(images),4), dtype = np.float32)
 		for j in range(len(images)):
-			aux[j] = images[j][i]
-		result[i] = np.average(aux,axis=0)
-	return result
+			result[j][i] = images[j][i]
+	res = np.average(result,axis=0)
+	return res
 
 
 
@@ -136,11 +135,9 @@ for i in range(1, 84):
 	args = np.append(args, pleoc)
 	args = np.append(args, tex)
 
-
 	args = normalize(args[:, np.newaxis], axis = 0).ravel()
 
 	all_set.append(args)
-
 #matrix de confusao
 verd_list = list()
 pred_list = list()

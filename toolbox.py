@@ -7,14 +7,14 @@ from skimage.feature import greycomatrix, greycoprops
 
 #Função de calcular os parâmetros de Textura
 def texture_param(image):
+	cv2.namedWindow("im")
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-	hist = greycomatrix(image, [1], [0], 256)
+	hist = greycomatrix(image, (1,1), [0], 256, symmetric=False, normed=True)
 	result = list()
 	props = ['contrast','homogeneity','energy','ASM']
-
 	for p in props:
-		result.append(greycoprops(hist, p))
-
+		im_res = greycoprops(hist, p)
+		result.append(im_res[0])
 	return result
 
 
