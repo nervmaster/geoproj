@@ -1,6 +1,7 @@
 import psycopg2
 import json
 import urllib
+import os
 from testopencs import crop_new_image
 
 config = json.load(open('db.config'))
@@ -28,7 +29,7 @@ for row in rows:
 	# Pegar as chapas
 	cur.execute('SELECT * FROM "Chapas" WHERE "minerio_cd"=' + str(minerio['id']) + ';')
 	chapas_rows = cur.fetchall()
-	
+
 	for chapa_row in chapas_rows:
 		chapa = dict()
 		chapa['id'] = chapa_row[0]
@@ -52,24 +53,19 @@ for row in rows:
 		minerio['chapas'].append(chapa)
 	bd.append(minerio)
 
-# Bd propriamente no formato json
-# bd = json.dumps(bd)
-
 # Iterando pelo BD
 label_list = list()
 arg_list = list()
 
 for minerio in bd:
-	for chapa in minerio['chapas'][-1]:
+	folder = './' + minerio['minerio'] + '/'
+	os.mkdir(folder)
+	for chapa in minerio['chapas']:
+		chapa_folder = folder + str(chapa['id']) + '/'
+		os.mkdir(chapa_folder)
 		images = list()
-		counter = 0
+		nfotos = 0
 		for foto in chapa['fotos']:
-			image_path = './' + str(counter) + '.jpg'
+			image_path = chapa_folder + str(nfotos) + '.jpg'
 			urllib.urlretrieve(foto['endereco'], image_path)
-			images.append(image_path)
-			counter = counter + 1
-		image_arg = crop_new_image(images)
-		arg_list.append(image_arg)
-		label_list.append(minerio['minerio'])
-
-
+			nfotos += 1
