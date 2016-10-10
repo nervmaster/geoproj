@@ -5,6 +5,52 @@ import cv2
 import numpy as np
 from skimage.feature import greycomatrix, greycoprops
 
+#classifica o minerio de acordo com seu angulo de extincao
+def get_extinction_pos(collection):
+	menor_l = 9999
+	pos = -1
+
+	for i in range(len(collection)):
+		l,_,_ = cv2.split(collection[i])
+
+		l = np.average(l, axis=0)
+		l = np.average(l, axis=0)
+
+		if(l < menor_l):
+			menor_l = l
+			pos = i
+
+	return pos
+
+#pega o brilho e seu desvio padrao
+def opacity_param(collection):
+	all_l = None
+	all_stddev = None
+
+	for i in range(len(collection)):
+		l,_,_ = cv2.split(collection[i])
+		l = np.average(l, axis=0)
+		l = np.average(l, axis=0)
+
+		dev = cv2.meanStdDev(collection[i])
+		dev = np.average(dev, axis=0)
+		dev = dev[0]
+
+		if(all_l == None):
+			all_l = l
+			all_stddev = dev
+		else:
+			all_l = np.append(all_l, l)
+			all_stddev = np.append(all_stddev, dev)
+
+	l = np.average(all_l, axis=0)
+	dev = np.average(all_stddev, axis=0)
+
+	return np.append(l,dev)
+
+
+
+
 #Função de calcular os parâmetros de Textura
 def texture_param(image):
 	cv2.namedWindow("im")

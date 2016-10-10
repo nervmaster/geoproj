@@ -99,7 +99,7 @@ def make_training_sets(collection, labels):
 def make_texture_param(folder):
 	images = list()
 	for filename in os.listdir(folder):
-		if filename.startswith('p'):
+		if filename.endswith('.png'):
 			im = cv2.imread(folder + filename)
 			images.append(texture_param(im))
 
@@ -110,8 +110,41 @@ def make_texture_param(folder):
 	res = np.average(result,axis=0)
 	return res
 
+def extinction_class(folder):
+	images = list()
+	for filename in os.listdir(folder):
+		if filename.startswith('x'):
+			im = cv2.imread(folder + filename)
+			images.append(im)
+	pos =  get_extinction_pos(images)
+	pos = pos*5
+	ext = -1
+	if(0 <= pos <= 5 or 85 <= pos <= 90):
+		ext = 1
+	elif(10 <= pos <= 20 or 70 <= pos <= 80):
+		ext = 2
+	elif(25 <= pos <= 35 or 55 <= pos <= 65):
+		ext = 3
+	else:
+		ext = 4
 
+	return ext
 
+def make_opacity_param(folder):
+	images = list()
+	for filename in os.listdir(folder):
+		if filename.startswith('p'):
+			im = cv2.imread(folder + filename)
+			images.append(im)
+	result = opacity_param(images)
+
+	images = list()
+	for filename in os.listdir(folder):
+		if filename.startswith('x'):
+			im = cv2.imread(folder + filename)
+			images.append(im)
+
+	return np.append(result, opacity_param(images))
 
 
 # Cria as labels
@@ -127,13 +160,16 @@ for i in range(1, 84):
 	ppl = make_avg_color(folder, 'p')
 	biref = make_pleochroism_color(folder, 'x')
 	pleoc = make_pleochroism_color(folder, 'p')
-
 	tex = make_texture_param(folder)
+	ext = extinction_class(folder)
+	opa = make_opacity_param(folder)
 
 	args = np.append(biref, xpl)
 	args = np.append(args, ppl)
 	args = np.append(args, pleoc)
 	args = np.append(args, tex)
+	args = np.append(args, ext)
+	args = np.append(args, opa)
 
 	args = normalize(args[:, np.newaxis], axis = 0).ravel()
 
@@ -167,6 +203,6 @@ for i in range(0,1000):
 		verd_list.append(verd)
 
 #Matrix de confusao
-print confusion_matrix(verd_list, pred_list, labels = list(set(make_aligholi_training_label())))
+#print confusion_matrix(verd_list, pred_list, labels = list(set(make_aligholi_training_label())))
 print float(float(correct)/float(counter))*100.0, '%'
 print 'dim', len(all_set[0])
