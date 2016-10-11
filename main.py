@@ -8,6 +8,7 @@ import cv2
 import operator
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import normalize
+from sklearn.naive_bayes import GaussianNB
 
 
 #Criando uma array das labels
@@ -83,17 +84,16 @@ def make_training_sets(collection, labels):
 	result['new_entry_set'] = list()
 	result['new_entry_labels'] = list()
 	for i in range(0,size):
-		target = randint(0, len(collection)-1)
+		target = randint(0, len(collection) -1)
 		result['new_entry_set'].append(collection[target])
 		result['new_entry_labels'].append(labels[target])
-		del collection[target]
-		np.delete(labels, target)
-	result['labels'] = list()
+		collection = np.delete(collection, target, 0)
+		labels = np.delete(labels, target, 0)
+
 	result['labels'] = labels
-
-	result['training'] = list()
 	result['training'] = collection
-
+	result['new_entry_set'] = np.asarray(result['new_entry_set'])
+	result['new_entry_labels'] = np.asarray(result['new_entry_labels'])
 	return result
 
 def make_texture_param(folder):
@@ -178,11 +178,16 @@ for i in range(1, 84):
 verd_list = list()
 pred_list = list()
 
+all_set = np.asarray(all_set)
 counter = 0
+
 correct = 0
 incorrect = 0
 
-for i in range(0,1000):
+naive_c = 0
+naive_err = 0
+
+for i in range(0,100):
 
 	t_set = all_set[:]
 	t_labels = labels[:]
@@ -192,17 +197,31 @@ for i in range(0,1000):
 
 	#verificar com o algoritmo de Vizinho Mais Proximo
 	for j in range(0, len(sets['new_entry_set'])):
-		pred = nn_classify(sets['training'], sets['labels'], sets['new_entry_set'][j])
 		verd = sets['new_entry_labels'][j]
+		counter += 1
+
+		# kNN CLASSIFIER
+		pred = nn_classify(sets['training'], sets['labels'], sets['new_entry_set'][j])
 		if verd == pred:
 			correct += 1
 		else:
 			incorrect += 1
-		counter += 1
-		pred_list.append(pred)
-		verd_list.append(verd)
+
+		# NAIVE BAYES CLASSIFIER
+		clf = GaussianNB()
+		clf.fit(sets['training'], sets['labels'])
+		pred = clf.predict(sets['new_entry_set'][j].reshape(1,-1))
+		if verd == pred:
+			naive_c += 1
+		else:
+			incorrect += 1
+
+
+
+
 
 #Matrix de confusao
 #print confusion_matrix(verd_list, pred_list, labels = list(set(make_aligholi_training_label())))
-print float(float(correct)/float(counter))*100.0, '%'
-print 'dim', len(all_set[0])
+print 'arg dim', len(all_set[0])
+print 'kNN', float(float(correct)/float(counter))*100.0, '%'
+print 'naive: ', float(float(naive_c)/float(counter))*100.0, '%'

@@ -3,6 +3,23 @@ import cv2
 import numpy as np
 
 
+#classifica o minerio de acordo com seu angulo de extincao
+def get_extinction_class(collection):
+	menor_l = 9999
+	pos = -1
+
+	for i in range(len(collection)):
+		l,_,_ = cv2.split(collection[i])
+
+		l = np.average(l, axis=0)
+
+		if(l < menor_l):
+			menor_l = l
+			pos = i
+
+	print pos
+	exit(1)
+
 
 # Funcao de dist euclidiana
 def distance(p0, p1):
@@ -44,7 +61,7 @@ def extract_color_input(roi):
 		# iterar os pixels
 		# cria um array em numpy
 		l,a,b = cv2.split(im)
-		
+
 		# valor l
 		l = np.average(l, axis=0)
 		l = np.average(l, axis=0)
@@ -52,7 +69,7 @@ def extract_color_input(roi):
 		# valor a
 		a = np.average(a, axis=0)
 		a = np.average(a, axis=0)
-		
+
 		# valor b
 		b = np.average(b, axis=0)
 		b = np.average(b, axis=0)
@@ -71,7 +88,7 @@ def extract_color_input(roi):
 		# valor a
 		a = np.min(a, axis=0)
 		a = np.min(a, axis=0)
-		
+
 		# valor b
 		b = np.min(b, axis=0)
 		b = np.min(b, axis=0)
@@ -90,7 +107,7 @@ def extract_color_input(roi):
 		# valor a
 		a = np.max(a, axis=0)
 		a = np.max(a, axis=0)
-		
+
 		# valor b
 		b = np.max(b, axis=0)
 		b = np.max(b, axis=0)
@@ -101,7 +118,7 @@ def extract_color_input(roi):
 		result['max'].append(b)
 
 		color_input.append(result)
-	#Criando um NP Array para calculo dos canais 
+	#Criando um NP Array para calculo dos canais
 	arr = np.zeros((len(color_input), 3), dtype=np.float32)
 	for i in range(0,len(color_input)):
 		arr[i] = color_input[i]['avg']
@@ -114,10 +131,10 @@ def merge_color_input(collection):
 		arr[i] = collection[i]
 	return np.average(arr, axis=0)
 
-#faz a atividade de crop de uma colecao de imagens 
+#faz a atividade de crop de uma colecao de imagens
 def crop_new_image(images):
-	global refPt 
-	global cropping 
+	global refPt
+	global cropping
 	global image
 	color_input_collection = []
 
@@ -156,6 +173,6 @@ def crop_new_image(images):
 			for i in range(0, len(refPt), 2):
 				roi.append(clone[refPt[i][1]:refPt[i+1][1], refPt[i][0]:refPt[i+1][0]])
 			color_input_collection.append(extract_color_input(roi))
-		cv2.destroyWindow("CROP HERE") 
+		cv2.destroyWindow("CROP HERE")
 	cv2.destroyAllWindows()
 	return merge_color_input(color_input_collection)
