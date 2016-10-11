@@ -9,6 +9,7 @@ import operator
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import normalize
 from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
 
 
 #Criando uma array das labels
@@ -195,26 +196,26 @@ for i in range(0,100):
 	#Criar o traning set
 	sets = make_training_sets(t_set, t_labels)
 
+	knn = KNeighborsClassifier(n_neighbors=1)
+	knn.fit(sets['training'], sets['labels'])
+
+	clf = GaussianNB()
+	clf.fit(sets['training'], sets['labels'])
+
 	#verificar com o algoritmo de Vizinho Mais Proximo
 	for j in range(0, len(sets['new_entry_set'])):
 		verd = sets['new_entry_labels'][j]
 		counter += 1
 
 		# kNN CLASSIFIER
-		pred = nn_classify(sets['training'], sets['labels'], sets['new_entry_set'][j])
+		pred = knn.predict(sets['new_entry_set'][j].reshape(1,-1))
 		if verd == pred:
 			correct += 1
-		else:
-			incorrect += 1
 
 		# NAIVE BAYES CLASSIFIER
-		clf = GaussianNB()
-		clf.fit(sets['training'], sets['labels'])
 		pred = clf.predict(sets['new_entry_set'][j].reshape(1,-1))
 		if verd == pred:
 			naive_c += 1
-		else:
-			incorrect += 1
 
 
 
