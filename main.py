@@ -50,7 +50,7 @@ def make_aligholi_training_label():
 	for i in range(81,83):
 		training_labels.append('Garnet')
 
-	return training_labels
+	return np.asarray(training_labels)
 
 #dentro de um diretorio
 #iterar os arquivos XPL
@@ -87,7 +87,7 @@ def make_training_sets(collection, labels):
 		result['new_entry_set'].append(collection[target])
 		result['new_entry_labels'].append(labels[target])
 		del collection[target]
-		del labels[target]
+		np.delete(labels, target)
 	result['labels'] = list()
 	result['labels'] = labels
 
