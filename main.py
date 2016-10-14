@@ -147,7 +147,7 @@ def make_opacity_param(folder):
 
 	return np.append(result, opacity_param(images))
 
-
+'''
 # Cria as labels
 labels = make_aligholi_training_label()
 
@@ -175,6 +175,37 @@ for i in range(1, 84):
 	args = normalize(args[:, np.newaxis], axis = 0).ravel()
 
 	all_set.append(args)
+
+import csv
+
+with open('param.csv', 'w') as csvfile:
+	arq = csv.writer(csvfile, delimiter=',')
+	for i in range(len(all_set)):
+		arq.writerow(all_set[i])
+
+with open('labels.csv', 'w') as csvfile:
+	arq = csv.writer(csvfile, delimiter=',')
+	for i in labels:
+		arq.writerow([i])
+
+exit(1)
+'''
+import csv
+# Read from csv file
+with open('param.csv', 'r') as csvfile:
+	reader = csv.reader(csvfile, delimiter=',')
+	all_set = list()
+	for row in reader:
+		all_set.append([float(i) for i in row])
+	all_set = np.asarray(all_set)
+
+with open('labels.csv', 'r') as csvfile:
+	reader = csv.reader(csvfile, delimiter=',')
+	labels = list()
+	for row in reader:
+		labels.append(row[0])
+	labels = np.asarray(labels)
+
 #matrix de confusao
 verd_list = list()
 pred_list = list()
