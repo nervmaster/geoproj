@@ -6,48 +6,88 @@ import cv2
 import operator
 import numpy as np
 from random import randint
+from sklearn.preprocessing import normalize
 from skimage.feature import greycomatrix, greycoprops
 
 
 #Criando uma array das labels
-def make_aligholi_training_label():
+def make_aligholi_training_label(numbers = False):
 	training_labels = list()
-	for i in range(0,5):
-		training_labels.append('Anthophilite')
-	for i in range(5, 11):
-		training_labels.append('Augite')
-	for i in range(11, 17):
-		training_labels.append('Olivine')
-	for i in range(17,31):
-		training_labels.append('Biotite')
-	for i in range(31,34):
-		training_labels.append('Muscovite')
-	for i in range(34,39):
-		training_labels.append('Calcite')
-	for i in range(39,44):
-		training_labels.append('Brown hornblende')
-	for i in range(44,54):
-		training_labels.append('Green hornblende')
-	for i in range(54,57):
-		training_labels.append('Chlorite')
-	for i in range(57,59):
-		training_labels.append('Opx')
-	for i in range(59,60):
-		training_labels.append('Apatite')
-	for i in range(60,67):
-		training_labels.append('Quartz')
-	for i in range(67,71):
-		training_labels.append('Plagioclase')
-	for i in range(71,76):
-		training_labels.append('Orthoclase')
-	for i in range(76,77):
-		training_labels.append('Microcline')
-	for i in range(77,79):
-		training_labels.append('Sanidine')
-	for i in range(79,81):
-		training_labels.append('Lucite')
-	for i in range(81,83):
-		training_labels.append('Garnet')
+	if(numbers == False):
+		for i in range(0,5):
+			training_labels.append('Anthophilite')
+		for i in range(5, 11):
+			training_labels.append('Augite')
+		for i in range(11, 17):
+			training_labels.append('Olivine')
+		for i in range(17,31):
+			training_labels.append('Biotite')
+		for i in range(31,34):
+			training_labels.append('Muscovite')
+		for i in range(34,39):
+			training_labels.append('Calcite')
+		for i in range(39,44):
+			training_labels.append('Brown hornblende')
+		for i in range(44,54):
+			training_labels.append('Green hornblende')
+		for i in range(54,57):
+			training_labels.append('Chlorite')
+		for i in range(57,59):
+			training_labels.append('Opx')
+		for i in range(59,60):
+			training_labels.append('Apatite')
+		for i in range(60,67):
+			training_labels.append('Quartz')
+		for i in range(67,71):
+			training_labels.append('Plagioclase')
+		for i in range(71,76):
+			training_labels.append('Orthoclase')
+		for i in range(76,77):
+			training_labels.append('Microcline')
+		for i in range(77,79):
+			training_labels.append('Sanidine')
+		for i in range(79,81):
+			training_labels.append('Lucite')
+		for i in range(81,83):
+			training_labels.append('Garnet')
+	else:
+		for i in range(0,5):
+			training_labels.append(1)
+		for i in range(5, 11):
+			training_labels.append(2)
+		for i in range(11, 17):
+			training_labels.append(3)
+		for i in range(17,31):
+			training_labels.append(4)
+		for i in range(31,34):
+			training_labels.append(5)
+		for i in range(34,39):
+			training_labels.append(6)
+		for i in range(39,44):
+			training_labels.append(7)
+		for i in range(44,54):
+			training_labels.append(8)
+		for i in range(54,57):
+			training_labels.append(9)
+		for i in range(57,59):
+			training_labels.append(10)
+		for i in range(59,60):
+			training_labels.append(11)
+		for i in range(60,67):
+			training_labels.append(12)
+		for i in range(67,71):
+			training_labels.append(13)
+		for i in range(71,76):
+			training_labels.append(14)
+		for i in range(76,77):
+			training_labels.append(15)
+		for i in range(77,79):
+			training_labels.append(16)
+		for i in range(79,81):
+			training_labels.append(17)
+		for i in range(81,83):
+			training_labels.append(18)
+
 
 	return np.asarray(training_labels)
 
@@ -155,16 +195,16 @@ def iterate_alligholli_dataset():
 		ppl = make_avg_color(folder, 'p')
 		biref = make_pleochroism_color(folder, 'x')
 		pleoc = make_pleochroism_color(folder, 'p')
-		tex = make_texture_param(folder)
-		ext = extinction_class(folder)
-		opa = make_opacity_param(folder)
+		#tex = make_texture_param(folder)
+		#ext = extinction_class(folder)
+		#opa = make_opacity_param(folder)
 
 		args = np.append(biref, xpl)
 		args = np.append(args, ppl)
 		args = np.append(args, pleoc)
-		args = np.append(args, tex)
-		args = np.append(args, ext)
-		args = np.append(args, opa)
+		#args = np.append(args, tex)
+		#args = np.append(args, ext)
+		#args = np.append(args, opa)
 
 		args = normalize(args[:, np.newaxis], axis = 0).ravel()
 
