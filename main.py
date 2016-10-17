@@ -10,7 +10,6 @@ labels = make_aligholi_training_label(numbers = True)
 verd_list = list()
 pred_list = list()
 
-all_set = np.asarray(all_set)
 counter = 0
 
 rnd_c = 0
@@ -22,7 +21,7 @@ sgdc_c = 0
 dtree_c = 0
 ann_c = 0
 
-for i in range(0,100):
+for i in range(0,10):
 
 	print 'iteração', i+1
 
@@ -53,7 +52,7 @@ for i in range(0,100):
 	dtree = tree.DecisionTreeClassifier()
 	dtree.fit(X,y)
 
-	ann = neural_network.MLPClassifier(max_iter = 10000 )
+	ann = neural_network.MLPClassifier(max_iter = 10000, hidden_layer_sizes = (18,10) )
 	ann.fit(X,y)
 
 	#verificar com o algoritmo de Vizinho Mais Proximo

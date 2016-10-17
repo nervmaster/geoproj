@@ -99,7 +99,10 @@ def make_avg_color(folder, light_type):
 	for filename in os.listdir(folder):
 		if filename.startswith(light_type):
 			im = cv2.imread(folder + filename)
-			images.append(extract_info(np.average, im))
+			im_lab = to_float_lab(im)
+			im_lab = extract_info(np.average, im_lab)
+			im = extract_info(np.average, im)
+			images.append(im_lab)
 	return merge_array(np.average, images)
 
 def make_pleochroism_color(folder, light_type):
@@ -108,7 +111,7 @@ def make_pleochroism_color(folder, light_type):
 	max_l = [0] * 3
 	for filename in os.listdir(folder):
 		if filename.startswith(light_type):
-			im = cv2.imread(folder + filename)
+			im = to_float_lab(cv2.imread(folder + filename))
 			im = extract_info(np.average, im)
 			if(im[0] < min_l[0]):
 				min_l = im
@@ -152,7 +155,7 @@ def extinction_class(folder):
 	images = list()
 	for filename in os.listdir(folder):
 		if filename.startswith('x'):
-			im = cv2.imread(folder + filename)
+			im = to_float_lab(cv2.imread(folder + filename))
 			images.append(im)
 	pos =  get_extinction_pos(images)
 	pos = pos*5
@@ -172,14 +175,14 @@ def make_opacity_param(folder):
 	images = list()
 	for filename in os.listdir(folder):
 		if filename.startswith('p'):
-			im = cv2.imread(folder + filename)
+			im = to_float_lab(cv2.imread(folder + filename))
 			images.append(im)
 	result = opacity_param(images)
 
 	images = list()
 	for filename in os.listdir(folder):
 		if filename.startswith('x'):
-			im = cv2.imread(folder + filename)
+			im = to_float_lab(cv2.imread(folder + filename))
 			images.append(im)
 
 	return np.append(result, opacity_param(images))
@@ -193,23 +196,23 @@ def iterate_alligholli_dataset():
 
 		xpl = make_avg_color(folder, 'x')
 		ppl = make_avg_color(folder, 'p')
-		biref = make_pleochroism_color(folder, 'x')
-		pleoc = make_pleochroism_color(folder, 'p')
+		#biref = make_pleochroism_color(folder, 'x')
+		#pleoc = make_pleochroism_color(folder, 'p')
 		#tex = make_texture_param(folder)
 		#ext = extinction_class(folder)
 		#opa = make_opacity_param(folder)
 
-		args = np.append(biref, xpl)
-		args = np.append(args, ppl)
-		args = np.append(args, pleoc)
+		args = np.append(xpl, ppl)
+		#args = np.append(args, biref)
+		#args = np.append(args, pleoc)
 		#args = np.append(args, tex)
 		#args = np.append(args, ext)
 		#args = np.append(args, opa)
 
-		args = normalize(args[:, np.newaxis], axis = 0).ravel()
+		#args = normalize(args[:, np.newaxis], axis = 0).ravel()
 
 		all_set.append(args)
-	return all_set
+	return np.asarray(all_set)
 
 def read_param_from_csv_file():
 	with open('param.csv', 'r') as csvfile:
@@ -273,7 +276,6 @@ def opacity_param(collection):
 
 #Função de calcular os parâmetros de Textura
 def texture_param(image):
-	cv2.namedWindow("im")
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 	hist = greycomatrix(image, (1,1), [0], 256, symmetric=False, normed=True)
 	result = list()
@@ -282,17 +284,6 @@ def texture_param(image):
 		im_res = greycoprops(hist, p)
 		result.append(im_res[0])
 	return result
-
-#Função da distância euclidiana em um espaõ n-dimencional
-def distance(p0, p1):
-	'Computa a disntacia euclidiana ao quadrado'
-	return np.sum((p0-p1)**2)
-
-#Algoritmo de vizinho mais proximo
-def nn_classify(training_set, training_labels, new_entry):
-	dists = np.array([distance(t, new_entry) for t in training_set])
-	nearest = dists.argmin()
-	return training_labels[nearest]
 
 #Em uma imagem transforma em float e em LAB
 def to_float_lab(image):
@@ -312,23 +303,9 @@ def to_float_lab(image):
 #		- np.max
 #image -> imagem ou ROI que vai ser extraido
 def extract_info(func, image):
-	l,a,b = cv2.split(image)
-
-	l = func(l, axis=0)
-	l = func(l, axis=0)
-
-	a = func(a, axis=0)
-	a = func(a, axis=0)
-
-	b = func(b, axis=0)
-	b = func(b, axis=0)
-
-	result = list()
-	result.append(l)
-	result.append(a)
-	result.append(b)
-
-	return result
+	image = func(image, axis=0)
+	image = func(image, axis=0)
+	return image
 
 #func -> funcao np para extrair a informacao
 #		- np.average
@@ -336,7 +313,5 @@ def extract_info(func, image):
 #		- np.max
 #collection -> colecao de informacoes da imagem
 def merge_array(func, collection):
-	arr = np.zeros((len(collection), 3), dtype=np.float32)
-	for i in range(0, len(collection)):
-		arr[i] = collection[i]
+	arr = np.asarray(collection)
 	return func(arr, axis=0)
