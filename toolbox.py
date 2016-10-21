@@ -6,7 +6,7 @@ import cv2
 import operator
 import numpy as np
 from random import randint
-from sklearn.preprocessing import normalize
+from sklearn import preprocessing
 from skimage.feature import greycomatrix, greycoprops
 
 
@@ -187,31 +187,39 @@ def make_opacity_param(folder):
 
 	return np.append(result, opacity_param(images))
 
-def iterate_alligholli_dataset():
+def iterate_alligholli_dataset(param, normalize=False):
 	#Itera o dataset
 	base_path = './MIfile/MI'
 	all_set = list()
 	for i in range(1, 84):
-		folder = base_path + str(i) + '/'
+ 		folder = base_path + str(i) + '/'
+		arg = np.empty([0,0])
+		if('xpl' in param):
+			xpl = make_avg_color(folder, 'x')
+			arg = np.append(arg, xpl)
+		if('ppl' in param):
+			ppl = make_avg_color(folder, 'p')
+			arg = np.append(arg, ppl)
+		if('biref' in param):
+			biref = make_pleochroism_color(folder, 'x')
+			arg = np.append(arg, biref)
+		if('pleoc' in param):
+			pleoc = make_pleochroism_color(folder, 'p')
+			arg = np.append(arg, pleoc)
+		if('tex' in param):
+			tex = make_texture_param(folder)
+			arg = np.append(arg, tex)
+		if('ext' in param):
+			ext = extinction_class(folder)
+			arg = np.append(arg, ext)
+		if('opa' in param):
+			opa = make_opacity_param(folder)
+			arg = np.append(arg, opa)
 
-		xpl = make_avg_color(folder, 'x')
-		ppl = make_avg_color(folder, 'p')
-		#biref = make_pleochroism_color(folder, 'x')
-		#pleoc = make_pleochroism_color(folder, 'p')
-		#tex = make_texture_param(folder)
-		#ext = extinction_class(folder)
-		#opa = make_opacity_param(folder)
+		if(normalize):
+			arg = preprocessing.normalize(arg[:, np.newaxis], axis = 0).ravel()
 
-		args = np.append(xpl, ppl)
-		#args = np.append(args, biref)
-		#args = np.append(args, pleoc)
-		#args = np.append(args, tex)
-		#args = np.append(args, ext)
-		#args = np.append(args, opa)
-
-		#args = normalize(args[:, np.newaxis], axis = 0).ravel()
-
-		all_set.append(args)
+		all_set.append(arg)
 	return np.asarray(all_set)
 
 def read_param_from_csv_file():
@@ -286,11 +294,17 @@ def texture_param(image):
 	return result
 
 #Em uma imagem transforma em float e em LAB
-def to_float_lab(image):
+def to_float_lab(image, normalize = True):
 	image = np.float32(image)
 	image = image / 255.0
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+	if(normalize):
+		image[:,:,0]  = image[:,:,0] / 100.0
+		image[:,:,1]  = (image[:,:,1] + 127.0) / 254.0
+		image[:,:,2]  = (image[:,:,2] + 127.0) / 254.0
+	
 	return image
+
 
 #Extrai as informacoes da imagem
 #type -> o tipo de informação a ser extraída

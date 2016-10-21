@@ -3,7 +3,7 @@
 from toolbox import *
 from sklearn import neural_network,linear_model,svm,naive_bayes,neighbors, metrics, tree
 
-all_set = iterate_alligholli_dataset()
+all_set = iterate_alligholli_dataset(param = ['ppl', 'xpl', 'pleoc', 'biref', 'opa'], normalize = False)
 labels = make_aligholi_training_label(numbers = True)
 
 #matrix de confusao
