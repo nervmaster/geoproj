@@ -8,7 +8,9 @@ import numpy as np
 from random import randint
 from sklearn import preprocessing
 from skimage.feature import greycomatrix, greycoprops
-
+from colormath.color_diff import delta_e_cie2000
+from colormath.color_objects import LabColor
+import scipy.stats as st
 
 #Criando uma array das labels
 def make_aligholi_training_label(numbers = False):
@@ -111,13 +113,15 @@ def make_pleochroism_color(folder, light_type):
 	max_l = [0] * 3
 	for filename in os.listdir(folder):
 		if filename.startswith(light_type):
-			im = to_float_lab(cv2.imread(folder + filename))
+			im = to_float_lab(cv2.imread(folder + filename), normalize = False)
 			im = extract_info(np.average, im)
 			if(im[0] < min_l[0]):
 				min_l = im
 			if(im[0] > max_l[0]):
 				max_l = im
-	return np.subtract(max_l, min_l)
+	a = LabColor(lab_l = max_l[0], lab_a = max_l[1], lab_b = max_l[2])
+	b = LabColor(lab_l = min_l[0], lab_a = min_l[1], lab_b = min_l[2])
+	return np.asarray(delta_e_cie2000(a, b))
 
 def make_training_sets(collection, labels):
 	size = len(collection) / 10
@@ -302,7 +306,7 @@ def to_float_lab(image, normalize = True):
 		image[:,:,0]  = image[:,:,0] / 100.0
 		image[:,:,1]  = (image[:,:,1] + 127.0) / 254.0
 		image[:,:,2]  = (image[:,:,2] + 127.0) / 254.0
-	
+
 	return image
 
 

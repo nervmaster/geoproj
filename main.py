@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 from toolbox import *
 from sklearn import neural_network,linear_model,svm,naive_bayes,neighbors, metrics, tree
+import numpy as np, scipy.stats as st
 
-all_set = iterate_alligholli_dataset(param = ['ppl', 'xpl', 'pleoc', 'biref', 'opa'], normalize = False)
+all_set = iterate_alligholli_dataset(param = ['xpl', 'pleoc', 'biref', 'ppl', 'tex', 'ext', 'opa'], normalize = False)
 labels = make_aligholi_training_label(numbers = True)
 
 #matrix de confusao
@@ -52,7 +53,7 @@ for i in range(0,10):
 	dtree = tree.DecisionTreeClassifier()
 	dtree.fit(X,y)
 
-	ann = neural_network.MLPClassifier(max_iter = 10000, hidden_layer_sizes = (18,10) )
+	ann = neural_network.MLPClassifier(max_iter = 400)
 	ann.fit(X,y)
 
 	#verificar com o algoritmo de Vizinho Mais Proximo
