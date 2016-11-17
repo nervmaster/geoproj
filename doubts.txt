@@ -1,0 +1,26 @@
+DELTA:
+Para cada propriedade incluida deve ser provido um delta de aceitabilidade
+Neste estudo delta é definido como a o meio comprimento do intervalo de confiança
+[l,u]cl de um conjunto de valores da propriedade correspondente a N chapas de um
+mineral especifico para um valor arbitrário de confiança.
+
+Em essência:
+  Pega-se todas as chapas do mineral X
+  Calcula as propriedades dessas chapas
+  Calcula-se o intervalo de confiança
+  Meio comprimento desse intervalo é o delta de uma propriedade
+
+
+Cor:
+  Para um mineral ser indentificavel pela cor. A distância da cor
+  deve ser menor que o delta de algum mineral conhecido.
+
+Pleoc:
+  Calcula-se a distancia entre as imagens de maior e menor L
+  Essa distancia deve ser menor que o delta de algum mineral conhecido
+
+Interference Color:
+  Mesmo que cor.
+
+Biref:
+  Mesmo que pleoc
