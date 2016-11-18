@@ -3,9 +3,32 @@
 from toolbox import *
 from sklearn import neural_network,linear_model,svm,naive_bayes,neighbors, metrics, tree
 import numpy as np, scipy.stats as st
+import csv
+
+
+def make_csv(data, labels):
+	with open('data.csv', 'w') as csvfile:
+		writer = csv.writer(csvfile, delimiter = ';')
+		header = list()
+		header.append('label')
+		header.append('xpl_l', 'xpl_a', 'xpl_b')
+		header.append('ppl_l', 'ppl_a', 'ppl_b')
+		header.append('biref_l', 'biref_a', 'biref_b')
+		header.append('pleoc_l', 'pleoc_a', 'pleoc_b')
+		header.append('ext')
+		header.append('tex_1', 'tex_2', 'tex_3')
+		header.append('opa_1')
+		writer.writerow(header)
+		for i in range(0,len(labels)-1):
+			writer.writerow(np.append(labels[i], data[i]))
+
+
 
 all_set = iterate_alligholli_dataset(param = ['xpl', 'pleoc', 'biref', 'ppl', 'tex', 'ext', 'opa'], normalize = False)
-labels = make_aligholi_training_label(numbers = True)
+labels = make_aligholi_training_label(numbers = False)
+
+make_csv(all_set, labels)
+exit(1)
 
 #matrix de confusao
 verd_list = list()
