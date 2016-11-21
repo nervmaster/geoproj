@@ -12,6 +12,66 @@ from colormath.color_diff import delta_e_cie2000
 from colormath.color_objects import LabColor
 import scipy.stats as st
 
+def make_csv(data, labels):
+	with open('data.csv', 'w') as csvfile:
+		writer = csv.writer(csvfile, delimiter = ';')
+		header = list()
+		header.append('label')
+		header.extend(('xpl_l', 'xpl_a', 'xpl_b'))
+		header.extend(('ppl_l', 'ppl_a', 'ppl_b'))
+		header.extend(('biref_l', 'biref_a', 'biref_b'))
+		header.extend(('pleoc_l', 'pleoc_a', 'pleoc_b'))
+		header.append('ext')
+		header.extend(('tex_1', 'tex_2', 'tex_3'))
+		header.append('opa_1')
+		writer.writerow(header)
+		for i in range(0,len(labels)-1):
+			writer.writerow(np.append(labels[i], data[i]))
+
+def conf_interval_dict(sample):
+	result = dict()
+	conf = 0.95
+	result['xpl_l'] = st.norm.interval(conf, loc = np.mean(sample[:,0:1]), scale = np.std(sample[:,0:1]))
+	result['xpl_a'] = st.norm.interval(conf, loc = np.mean(sample[:,1:2]), scale = np.std(sample[:,1:2]))
+	result['xpl_b'] = st.norm.interval(conf, loc = np.mean(sample[:,2:3]), scale = np.std(sample[:,2:3]))
+	result['ppl_l'] = st.norm.interval(conf, loc = np.mean(sample[:,3:4]), scale = np.std(sample[:,3:4]))
+	result['ppl_a'] = st.norm.interval(conf, loc = np.mean(sample[:,4:5]), scale = np.std(sample[:,4:5]))
+	result['ppl_b'] = st.norm.interval(conf, loc = np.mean(sample[:,5:6]), scale = np.std(sample[:,5:6]))
+	result['biref_l'] = st.norm.interval(conf, loc = np.mean(sample[:,6:7]), scale = np.std(sample[:,6:7]))
+	result['biref_a'] = st.norm.interval(conf, loc = np.mean(sample[:,7:8]), scale = np.std(sample[:,7:8]))
+	result['biref_b'] = st.norm.interval(conf, loc = np.mean(sample[:,8:9]), scale = np.std(sample[:,8:9]))
+	result['pleoc_l'] = st.norm.interval(conf, loc = np.mean(sample[:,9:10]), scale = np.std(sample[:,9:10]))
+	result['pleoc_a'] = st.norm.interval(conf, loc = np.mean(sample[:,10:11]), scale = np.std(sample[:,10:11]))
+	result['pleoc_b'] = st.norm.interval(conf, loc = np.mean(sample[:,11:12]), scale = np.std(sample[:,11:12]))
+	result['ext'] = st.norm.interval(conf, loc = np.mean(sample[:,12:13]), scale = np.std(sample[:,12:13]))
+	result['tex_1'] = st.norm.interval(conf, loc = np.mean(sample[:,13:14]), scale = np.std(sample[:,13:14]))
+	result['tex_2'] = st.norm.interval(conf, loc = np.mean(sample[:,14:15]), scale = np.std(sample[:,14:15]))
+	result['tex_3'] = st.norm.interval(conf, loc = np.mean(sample[:,15:16]), scale = np.std(sample[:,15:16]))
+	result['opa_1'] = st.norm.interval(conf, loc = np.mean(sample[:,16:17]), scale = np.std(sample[:,16:17]))
+	return result
+
+
+def make_confidence_interval(data, labels):
+	result = dict()
+	current = labels[0]
+	sample = list()
+	for i in range(0, len(labels)):
+		if(current == labels[i]):
+			sample.append(data[i])
+		else:
+			sample = np.asarray(sample)
+			if(len(sample) > 1):
+				result[current] = conf_interval_dict(sample)
+			else:
+				pass
+			current = labels[i]
+			sample = list()
+	result[current] = dict()
+	sample = np.asarray(sample)
+	result[current] = conf_interval_dict(sample)
+	return result
+
+
 #Criando uma array das labels
 def make_aligholi_training_label(numbers = False):
 	training_labels = list()
