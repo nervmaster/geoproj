@@ -8,12 +8,11 @@ import pprint
 
 
 all_set = iterate_alligholli_dataset(param = ['xpl', 'pleoc', 'biref', 'ppl', 'tex', 'ext', 'opa'], normalize = False)
-labels = make_aligholi_training_label(numbers = False)
+labels = make_aligholi_training_label(numbers = True)
 
 data_conf = make_confidence_interval(all_set, labels)
 
 make_csv(all_set, labels)
-exit(1)
 
 
 #matrix de confusao
@@ -31,7 +30,7 @@ sgdc_c = 0
 dtree_c = 0
 ann_c = 0
 
-for i in range(0,10):
+for i in range(0,1):
 
 	print 'iteração', i+1
 
@@ -39,7 +38,8 @@ for i in range(0,10):
 	t_labels = labels[:]
 
 	#Criar o traning set
-	sets = make_training_sets(t_set, t_labels)
+	targets = [61,62,25,75]
+	sets = select_training_sets(t_set, t_labels, targets)
 
 	X = sets['training']
 	y = sets['labels']
@@ -62,52 +62,65 @@ for i in range(0,10):
 	dtree = tree.DecisionTreeClassifier()
 	dtree.fit(X,y)
 
-	ann = neural_network.MLPClassifier(max_iter = 400)
+	ann = neural_network.MLPClassifier(max_iter = 200)
 	ann.fit(X,y)
 
 	#verificar com o algoritmo de Vizinho Mais Proximo
+	print sets['new_entry_labels']
+
 	for j in range(0, len(sets['new_entry_set'])):
 		verd = sets['new_entry_labels'][j]
 		counter += 1
 
+		print 'Conjunto real',verd
+
+
 		# RANDOM CLASSIFIER
 		pred = labels[randint(0,len(labels)-1)]
+		print 'Random',pred
 		if verd == pred:
 			rnd_c += 1
 
 		# kNN CLASSIFIER
 		pred = knn.predict(sets['new_entry_set'][j].reshape(1,-1))
+		print 'kNN',pred
 		if verd == pred:
 			knn_c += 1
 
 		# NAIVE BAYES CLASSIFIER
 		pred = clf.predict(sets['new_entry_set'][j].reshape(1,-1))
+		print 'Naive Bayes',pred
 		if verd == pred:
 			naive_c += 1
 
 		# LINEAR CLASSIFIER
 		pred = ln.predict(sets['new_entry_set'][j].reshape(1,-1))
 		pred = min(labels, key=lambda x:abs(x-pred))
+		print 'Linear',pred
 		if verd == pred:
 			ln_c += 1
 
 		# SVM CLASSIFIER
 		pred = svm_clf.predict(sets['new_entry_set'][j].reshape(1,-1))
+		print 'SVM',pred
 		if verd == pred:
 			svm_c += 1
 
 		# SGD CLASSIFIER
 		pred = sgdc.predict(sets['new_entry_set'][j].reshape(1,-1))
+		print 'SGD',pred
 		if verd == pred:
 			sgdc_c += 1
 
 		# DECISION TREE CLASSIFIER
 		pred = dtree.predict(sets['new_entry_set'][j].reshape(1,-1))
+		print 'Tree',pred
 		if verd == pred:
 			dtree_c += 1
 
 		# Neural Network CLASSIFIER
 		pred = ann.predict(sets['new_entry_set'][j].reshape(1,-1))
+		print 'aNN',pred
 		if verd == pred:
 			ann_c += 1
 

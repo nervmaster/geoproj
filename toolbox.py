@@ -183,6 +183,20 @@ def make_pleochroism_color(folder, light_type):
 	b = LabColor(lab_l = min_l[0], lab_a = min_l[1], lab_b = min_l[2])
 	return np.asarray(delta_e_cie2000(a, b))
 
+def select_training_sets(collection, labels, targets):
+	result = dict()
+	result['new_entry_set'] = list()
+	result['new_entry_labels'] = list()
+
+	for target in targets:
+		result['new_entry_set'].append(collection[target])
+		result['new_entry_labels'].append(labels[target])
+	result['labels'] = np.delete(labels, targets, 0)
+	result['training'] = np.delete(collection, targets, 0)
+	result['new_entry_set'] = np.asarray(result['new_entry_set'])
+	result['new_entry_labels'] = np.asarray(result['new_entry_labels'])
+	return result
+
 def make_training_sets(collection, labels):
 	size = len(collection) / 10
 	result = dict()
