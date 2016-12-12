@@ -19,11 +19,11 @@ def make_csv(data, labels):
 		header.append('label')
 		header.extend(('xpl_l', 'xpl_a', 'xpl_b'))
 		header.extend(('ppl_l', 'ppl_a', 'ppl_b'))
-		header.extend(('biref_l', 'biref_a', 'biref_b'))
-		header.extend(('pleoc_l', 'pleoc_a', 'pleoc_b'))
+		header.append('biref')
+		header.append('pleoc')
+		header.extend(('tex_1', 'tex_2', 'tex_3', 'tex_4'))
 		header.append('ext')
-		header.extend(('tex_1', 'tex_2', 'tex_3'))
-		header.append('opa_1')
+		header.extend(('opa_l_xpl', 'opa_stddev_xpl', 'opa_l_ppl', 'opa_stddev_ppl'))
 		writer.writerow(header)
 		for i in range(0,len(labels)-1):
 			writer.writerow(np.append(labels[i], data[i]))
@@ -50,7 +50,6 @@ def conf_interval_dict(sample):
 	result['opa_1'] = st.norm.interval(conf, loc = np.mean(sample[:,16:17]), scale = np.std(sample[:,16:17]))
 	return result
 
-
 def make_confidence_interval(data, labels):
 	result = dict()
 	current = labels[0]
@@ -70,7 +69,6 @@ def make_confidence_interval(data, labels):
 	sample = np.asarray(sample)
 	result[current] = conf_interval_dict(sample)
 	return result
-
 
 #Criando uma array das labels
 def make_aligholi_training_label(numbers = False):
@@ -202,13 +200,15 @@ def make_training_sets(collection, labels):
 	result = dict()
 	result['new_entry_set'] = list()
 	result['new_entry_labels'] = list()
-	for i in range(0,size):
+	n_pick = 0
+	while n_pick < size:
 		target = randint(0, len(collection) -1)
-		result['new_entry_set'].append(collection[target])
-		result['new_entry_labels'].append(labels[target])
-		collection = np.delete(collection, target, 0)
-		labels = np.delete(labels, target, 0)
-
+		if (target > 0 and labels[target] == labels[target-1]) or (target < len(collection)-1 and labels[target] == labels[target+1]):
+			result['new_entry_set'].append(collection[target])
+			result['new_entry_labels'].append(labels[target])
+			collection = np.delete(collection, target, 0)
+			labels = np.delete(labels, target, 0)
+			n_pick +=1
 	result['labels'] = labels
 	result['training'] = collection
 	result['new_entry_set'] = np.asarray(result['new_entry_set'])
@@ -270,8 +270,9 @@ def iterate_alligholli_dataset(param, normalize=False):
 	base_path = './MIfile/MI'
 	all_set = list()
 	for i in range(1, 84):
- 		folder = base_path + str(i) + '/'
+		folder = base_path + str(i) + '/'
 		arg = np.empty([0,0])
+
 		if('xpl' in param):
 			xpl = make_avg_color(folder, 'x')
 			arg = np.append(arg, xpl)
@@ -296,26 +297,37 @@ def iterate_alligholli_dataset(param, normalize=False):
 
 		if(normalize):
 			arg = preprocessing.normalize(arg[:, np.newaxis], axis = 0).ravel()
-
 		all_set.append(arg)
 	return np.asarray(all_set)
 
-def read_param_from_csv_file():
-	with open('param.csv', 'r') as csvfile:
-		reader = csv.reader(csvfile, delimiter=',')
-		all_set = list()
-		for row in reader:
-			all_set.append([float(i) for i in row])
-		return np.asarray(all_set)
+def read_from_csv(path,param):
+	result = dict()
+	result['entries'] = list()
+	result['labels'] = list()
 
-def read_labels_from_csv_file():
-	with open('labels.csv', 'r') as csvfile:
-		reader = csv.reader(csvfile, delimiter=',')
-		labels = list()
+	with open(path, 'r') as csvfile:
+		reader = csv.DictReader(csvfile, delimiter=';')
 		for row in reader:
-			labels.append(row[0])
-		return np.asarray(labels)
-
+			result['labels'].append(row['label'])
+			arg = list()
+			if 'xpl' in param:
+				arg.extend((row['xpl_l'], row['xpl_a'], row['xpl_b']))
+			if 'ppl' in param:
+				arg.extend((row['ppl_l'], row['ppl_a'], row['ppl_b']))
+			if 'biref' in param:
+				arg.append(row['biref'])
+			if 'pleoc' in param:
+				arg.append(row['pleoc'])
+			if 'ext' in param:
+				arg.append(row['ext'])
+			if 'tex' in param:
+				arg.extend((row['tex_1'],row['tex_2'],row['tex_3'],row['tex_4']))
+			if 'opa' in param:
+				arg.extend((row['opa_l_xpl'], row['opa_l_ppl'], row['opa_stddev_xpl'], row['opa_stddev_ppl']))
+			result['entries'].append(arg)
+		result['entries'] = np.asarray(result['entries']).astype(np.float)
+		result['labels'] = np.asarray(result['labels']).astype(np.float)
+		return result
 
 #classifica o minerio de acordo com seu angulo de extincao
 def get_extinction_pos(collection):
@@ -336,9 +348,6 @@ def get_extinction_pos(collection):
 
 #pega o brilho e seu desvio padrao
 def opacity_param(collection):
-	all_l = None
-	all_stddev = None
-
 	for i in range(len(collection)):
 		l,_,_ = cv2.split(collection[i])
 		l = np.average(l, axis=0)
@@ -348,13 +357,12 @@ def opacity_param(collection):
 		dev = np.average(dev, axis=0)
 		dev = dev[0]
 
-		if(all_l == None):
+		if(i == 0):
 			all_l = l
 			all_stddev = dev
 		else:
 			all_l = np.append(all_l, l)
 			all_stddev = np.append(all_stddev, dev)
-
 	l = np.average(all_l, axis=0)
 	dev = np.average(all_stddev, axis=0)
 
