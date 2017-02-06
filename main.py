@@ -5,12 +5,15 @@ from sklearn import neural_network,linear_model,svm,naive_bayes,neighbors, metri
 import numpy as np, scipy.stats as st
 import csv
 import itertools
+from ann import build_ann
 
 param = ['xpl', 'pleoc', 'biref', 'ppl', 'tex', 'ext', 'opa']
 #all_set = iterate_alligholli_dataset(param = param, normalize = False)
 #labels = make_aligholi_training_label(numbers = True)
 #data_conf = make_confidence_interval(all_set, labels)
 #make_csv(all_set, labels)
+
+
 with open('results.csv', 'w') as csvfile:
 	fieldnames = ['param','random','kNN','naive','linear','svm','sgdc','dtree','ann']
 	writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
@@ -22,6 +25,7 @@ with open('results.csv', 'w') as csvfile:
 			linha = dict()
 			linha['param'] = subset
 			r = read_from_csv('data.csv', subset)
+
 			#matrix de confusao
 			verd_list = list()
 			pred_list = list()
@@ -37,7 +41,8 @@ with open('results.csv', 'w') as csvfile:
 			dtree_c = 0
 			ann_c = 0
 
-			for i in range(0,10):
+			#build ANN
+			for i in range(0,100):
 
 
 				t_set = r['entries'][:]
@@ -71,8 +76,8 @@ with open('results.csv', 'w') as csvfile:
 				ann = neural_network.MLPClassifier(max_iter = 200)
 				ann.fit(X,y)
 
-				#verificar com o algoritmo de Vizinho Mais Proximo
-
+				#build_ann(r['entries'],r['labels'])
+				#exit(1)
 				for j in range(0, len(sets['new_entry_set'])):
 					verd = sets['new_entry_labels'][j]
 					counter += 1
