@@ -71,115 +71,108 @@ def make_confidence_interval(data, labels):
 	return result
 
 #Criando uma array das labels
-def make_aligholi_training_label(numbers = False):
-	training_labels = list()
-	if(numbers == False):
-		for i in range(0,5):
-			training_labels.append('Anthophilite')
-		for i in range(5, 11):
-			training_labels.append('Augite')
-		for i in range(11, 17):
-			training_labels.append('Olivine')
-		for i in range(17,31):
-			training_labels.append('Biotite')
-		for i in range(31,34):
-			training_labels.append('Muscovite')
-		for i in range(34,39):
-			training_labels.append('Calcite')
-		for i in range(39,44):
-			training_labels.append('Brown hornblende')
-		for i in range(44,54):
-			training_labels.append('Green hornblende')
-		for i in range(54,57):
-			training_labels.append('Chlorite')
-		for i in range(57,59):
-			training_labels.append('Opx')
-		for i in range(59,60):
-			training_labels.append('Apatite')
-		for i in range(60,67):
-			training_labels.append('Quartz')
-		for i in range(67,71):
-			training_labels.append('Plagioclase')
-		for i in range(71,76):
-			training_labels.append('Orthoclase')
-		for i in range(76,77):
-			training_labels.append('Microcline')
-		for i in range(77,79):
-			training_labels.append('Sanidine')
-		for i in range(79,81):
-			training_labels.append('Lucite')
-		for i in range(81,83):
-			training_labels.append('Garnet')
+def get_aligholi_number_label(pos):
+	if pos <= 5:
+		return 0
+	if pos <= 11:
+		return 1
+	if pos <= 17:
+		return 2
+	if pos <= 31:
+		return 3
+	if pos <= 34:
+		return 4
+	if pos <= 39:
+		return 5
+	if pos <= 44:
+		return 6
+	if pos <= 54:
+		return 7
+	if pos <= 57:
+		return 8
+	if pos <= 59:
+		return 9
+	if pos <= 60:
+		return 10
+	if pos <= 67:
+		return 11
+	if pos <= 71:
+		return 12
+	if pos <= 76:
+		return 13
+	if pos <= 77:
+		return 14
+	if pos <= 79:
+		return 15
+	if pos <= 81:
+		return 16
 	else:
-		for i in range(0,5):
-			training_labels.append(1)
-		for i in range(5, 11):
-			training_labels.append(2)
-		for i in range(11, 17):
-			training_labels.append(3)
-		for i in range(17,31):
-			training_labels.append(4)
-		for i in range(31,34):
-			training_labels.append(5)
-		for i in range(34,39):
-			training_labels.append(6)
-		for i in range(39,44):
-			training_labels.append(7)
-		for i in range(44,54):
-			training_labels.append(8)
-		for i in range(54,57):
-			training_labels.append(9)
-		for i in range(57,59):
-			training_labels.append(10)
-		for i in range(59,60):
-			training_labels.append(11)
-		for i in range(60,67):
-			training_labels.append(12)
-		for i in range(67,71):
-			training_labels.append(13)
-		for i in range(71,76):
-			training_labels.append(14)
-		for i in range(76,77):
-			training_labels.append(15)
-		for i in range(77,79):
-			training_labels.append(16)
-		for i in range(79,81):
-			training_labels.append(17)
-		for i in range(81,83):
-			training_labels.append(18)
+		return 17
 
-
-	return np.asarray(training_labels)
+def get_aligholi_training_label(pos, numbers = False):
+	if pos <= 5:
+		return 'Anthophilite'
+	if pos <= 11:
+		return 'Augite'
+	if pos <= 17:
+		return 'Olivine'
+	if pos <= 31:
+		return 'Biotite'
+	if pos <= 34:
+		return 'Muscovite'
+	if pos <= 39:
+		return 'Calcite'
+	if pos <= 44:
+		return 'Brown hornblende'
+	if pos <= 54:
+		return 'Green hornblende'
+	if pos <= 57:
+		return 'Chlorite'
+	if pos <= 59:
+		return 'Opx'
+	if pos <= 60:
+		return 'Apatite'
+	if pos <= 67:
+		return 'Quartz'
+	if pos <= 71:
+		return 'PLagioclase'
+	if pos <= 76:
+		return 'Orthoclase'
+	if pos <= 77:
+		return 'Microcline'
+	if pos <= 79:
+		return 'Sanidine'
+	if pos <= 81:
+		return 'lucite'
+	else:
+		return 'Garnet'
 
 #dentro de um diretorio
 #iterar os arquivos XPL
 #fazer media geral xpl
-def make_avg_color(folder, light_type):
-	images = list()
-	for filename in os.listdir(folder):
-		if filename.startswith(light_type):
-			im = cv2.imread(folder + filename)
-			im_lab = to_float_lab(im)
-			im_lab = extract_info(np.average, im_lab)
-			im = extract_info(np.average, im)
-			images.append(im_lab)
-	return merge_array(np.average, images)
+def make_avg_color(im_list, light_type):
+	bob = list()
+	for im in im_list:
+		im_lab = to_float_lab(im)
+		im_lab = extract_info(np.average, im_lab)
+		bob.append(im_lab)
+	return merge_array(np.average, bob)
 
-def make_pleochroism_color(folder, light_type):
+def make_pleochroism_color(im_list, light_type):
 	images = list()
 	min_l = [200] * 3
 	max_l = [0] * 3
-	for filename in os.listdir(folder):
-		if filename.startswith(light_type):
-			im = to_float_lab(cv2.imread(folder + filename), normalize = False)
-			im = extract_info(np.average, im)
-			if(im[0] < min_l[0]):
-				min_l = im
-			if(im[0] > max_l[0]):
-				max_l = im
+	for im in im_list:
+		im_lab = to_float_lab(im)
+		im_lab = extract_info(np.average, im)
+		if(im_lab[0] < min_l[0]):
+			min_l = im_lab
+		elif(im_lab[0] < max_l[0]):
+			max_l = im_lab
 	a = LabColor(lab_l = max_l[0], lab_a = max_l[1], lab_b = max_l[2])
 	b = LabColor(lab_l = min_l[0], lab_a = min_l[1], lab_b = min_l[2])
 	return np.asarray(delta_e_cie2000(a, b))
+
 
 def select_training_sets(collection, labels, targets):
 	result = dict()
@@ -215,26 +208,22 @@ def make_training_sets(collection, labels):
 	result['new_entry_labels'] = np.asarray(result['new_entry_labels'])
 	return result
 
-def make_texture_param(folder):
-	images = list()
-	for filename in os.listdir(folder):
-		if filename.endswith('.png'):
-			im = cv2.imread(folder + filename)
-			images.append(texture_param(im))
+def make_texture_param(im_list):
+	bob = list()
+	for im in im_list:
+		bob.append(texture_param(im))
+	result = np.zeros((len(bob),4), dtype = np.float32)
+	for i in range(len(bob[0])):
+		for j in range(len(bob)):
+			result[j][i] = bob[j][i]
+	return np.average(result, axis=0)
 
-	result = np.zeros((len(images),4), dtype = np.float32)
-	for i in range(len(images[0])):
-		for j in range(len(images)):
-			result[j][i] = images[j][i]
-	res = np.average(result,axis=0)
-	return res
 
-def extinction_class(folder):
+def extinction_class(im_list):
 	images = list()
-	for filename in os.listdir(folder):
-		if filename.startswith('x'):
-			im = to_float_lab(cv2.imread(folder + filename))
-			images.append(im)
+	for im in im_list:
+		images.append(to_float_lab(im))
+
 	pos =  get_extinction_pos(images)
 	pos = pos*5
 	ext = -1
@@ -249,8 +238,17 @@ def extinction_class(folder):
 
 	return ext
 
-def make_opacity_param(folder):
+def make_opacity_param(im_ppl, im_xpl):
 	images = list()
+	for im in im_ppl:
+		images.append(to_float_lab(im))
+	result = opacity_param(images)
+
+	images = list()
+	for im in im_xpl:
+		images.append(to_float_lab(im))
+	return np.append(result, opacity_param(images))
+
 	for filename in os.listdir(folder):
 		if filename.startswith('p'):
 			im = to_float_lab(cv2.imread(folder + filename))
@@ -265,40 +263,57 @@ def make_opacity_param(folder):
 
 	return np.append(result, opacity_param(images))
 
-def iterate_alligholli_dataset(param, normalize=False):
+def iterate_alligholli_dataset(param, normalize=False, pairs=19):
 	#Itera o dataset
 	base_path = './MIfile/MI'
 	all_set = list()
+	labels = list()
+	#Pegar os arquivos e mandar para as funcoes
+	#iterar tudo e criar listas com arquivos
+	labels = list()
 	for i in range(1, 84):
 		folder = base_path + str(i) + '/'
-		arg = np.empty([0,0])
+		im_xpl = list()
+		im_ppl = list()
 
-		if('xpl' in param):
-			xpl = make_avg_color(folder, 'x')
-			arg = np.append(arg, xpl)
-		if('ppl' in param):
-			ppl = make_avg_color(folder, 'p')
-			arg = np.append(arg, ppl)
-		if('biref' in param):
-			biref = make_pleochroism_color(folder, 'x')
-			arg = np.append(arg, biref)
-		if('pleoc' in param):
-			pleoc = make_pleochroism_color(folder, 'p')
-			arg = np.append(arg, pleoc)
-		if('tex' in param):
-			tex = make_texture_param(folder)
-			arg = np.append(arg, tex)
-		if('ext' in param):
-			ext = extinction_class(folder)
-			arg = np.append(arg, ext)
-		if('opa' in param):
-			opa = make_opacity_param(folder)
-			arg = np.append(arg, opa)
+		for j in range(1,20):
+			im_ppl.append(cv2.imread(folder + 'p' + str(j) + '.png'))
+			im_xpl.append(cv2.imread(folder + 'x' + str(j) + '.png'))
+			if(j%pairs == 0 or j == 19):
+				# desired number of pairs
+				arg = np.empty([0,0])
 
-		if(normalize):
-			arg = preprocessing.normalize(arg[:, np.newaxis], axis = 0).ravel()
-		all_set.append(arg)
-	return np.asarray(all_set)
+				if('xpl' in param):
+					xpl = make_avg_color(im_xpl, 'x')
+					arg = np.append(arg, xpl)
+				if('ppl' in param):
+					ppl = make_avg_color(im_ppl, 'p')
+					arg = np.append(arg, ppl)
+				if('biref' in param):
+					biref = make_pleochroism_color(im_xpl, 'x')
+					arg = np.append(arg, biref)
+				if('pleoc' in param):
+					pleoc = make_pleochroism_color(im_ppl, 'p')
+					arg = np.append(arg, pleoc)
+				if('tex' in param):
+					tex = make_texture_param(im_xpl + im_ppl)
+					arg = np.append(arg, tex)
+				if('ext' in param):
+					ext = extinction_class(im_xpl + im_ppl)
+					arg = np.append(arg, ext)
+				if('opa' in param):
+					opa = make_opacity_param(im_ppl, im_xpl)
+					arg = np.append(arg, opa)
+
+				if(normalize):
+					arg = preprocessing.normalize(arg[:, np.newaxis], axis = 0).ravel()
+				im_xpl = list()
+				im_ppl = list()
+				all_set.append(arg)
+				labels.append(get_aligholi_number_label(i))
+
+
+	return np.asarray(all_set), np.asarray(labels)
 
 def read_from_csv(path,param):
 	result = dict()

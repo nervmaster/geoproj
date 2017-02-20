@@ -7,17 +7,29 @@ import csv
 import itertools
 from ann import build_ann
 
-param = ['xpl', 'pleoc', 'biref', 'ppl', 'tex', 'ext', 'opa']
-#all_set = iterate_alligholli_dataset(param = param, normalize = False)
+param = ['xpl', 'pleoc', 'biref', 'ppl', 'tex', 'opa']
+all_set, labels = iterate_alligholli_dataset(param = param, normalize = False)
+print all_set, labels
+exit(1)
 #labels = make_aligholi_training_label(numbers = True)
 #data_conf = make_confidence_interval(all_set, labels)
 #make_csv(all_set, labels)
 
 
+# Create param per image
+image_param = ['xpl', 'pleoc']
+
 with open('results.csv', 'w') as csvfile:
 	fieldnames = ['param','random','kNN','naive','linear','svm','sgdc','dtree','ann']
 	writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
 	writer.writeheader()
+
+	# Code block for setting ANN
+	r = read_from_csv('data.csv', param)
+	#build_ann(r['entries'], r['labels'])
+	#print 'built'
+	#exit(1)
+
 	for L in range(0, len(param) + 1):
 		for subset in itertools.combinations(param, L):
 			if(len(subset) < 1):
@@ -43,7 +55,6 @@ with open('results.csv', 'w') as csvfile:
 
 			#build ANN
 			for i in range(0,100):
-
 
 				t_set = r['entries'][:]
 				t_labels = r['labels'][:]
@@ -76,8 +87,8 @@ with open('results.csv', 'w') as csvfile:
 				ann = neural_network.MLPClassifier(max_iter = 200)
 				ann.fit(X,y)
 
-				#build_ann(r['entries'],r['labels'])
-				#exit(1)
+
+
 				for j in range(0, len(sets['new_entry_set'])):
 					verd = sets['new_entry_labels'][j]
 					counter += 1
