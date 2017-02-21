@@ -10,13 +10,13 @@ from training import train
 from multiprocessing import Process, Lock
 
 param = ['xpl', 'pleoc', 'biref', 'ppl', 'tex']
-#all_set, labels = iterate_alligholli_dataset(param = param, normalize = False, pairs = 4)
+#all_set, labels = iterate_alligholli_dataset(param = param, normalize = False, pairs = 2)
 #data_conf = make_confidence_interval(all_set, labels)
 #make_csv(all_set, labels)
 #exit(1)
 
 with open('results.csv', 'w') as csvfile:
-	fieldnames = ['param','random','kNN','naive','linear','svm','sgdc','dtree','ann']
+	fieldnames = ['param','random','kNN','naive','linear','svm','sgdc','dtree']
 	writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
 	writer.writeheader()
 
@@ -28,8 +28,10 @@ with open('results.csv', 'w') as csvfile:
 
 	lock = Lock()
 	for L in range(0, len(param) + 1):
-		pp = list()
 		print L
+		if L < 1:
+			continue
+		pp = list()
 		for subset in itertools.combinations(param, L):
 			p = Process(target = train, args = (subset, writer, lock))
 			p.start()
@@ -37,3 +39,5 @@ with open('results.csv', 'w') as csvfile:
 
 		for p in pp:
 			p.join()
+		csvfile.flush()
+		break
