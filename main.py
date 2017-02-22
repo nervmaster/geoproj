@@ -7,16 +7,16 @@ import csv
 import itertools
 from ann import build_ann
 from training import train
-from multiprocessing import Process, Lock
+from multiprocessing import Process, Lock, Queue
 
 param = ['xpl', 'pleoc', 'biref', 'ppl', 'tex']
-#all_set, labels = iterate_alligholli_dataset(param = param, normalize = False, pairs = 2)
+#all_set, labels = iterate_alligholli_dataset(param = param, normalize = False, pairs = 1)
 #data_conf = make_confidence_interval(all_set, labels)
 #make_csv(all_set, labels)
 #exit(1)
 
 with open('results.csv', 'w') as csvfile:
-	fieldnames = ['param','random','kNN','naive','linear','svm','sgdc','dtree']
+	fieldnames = ['param','random','kNN','naive','linear','svm','sgdc','dtree','ann']
 	writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
 	writer.writeheader()
 
@@ -27,17 +27,19 @@ with open('results.csv', 'w') as csvfile:
 	#exit(1)
 
 	lock = Lock()
+	linhas = Queue()
 	for L in range(0, len(param) + 1):
 		print L
 		if L < 1:
 			continue
 		pp = list()
 		for subset in itertools.combinations(param, L):
-			p = Process(target = train, args = (subset, writer, lock))
+			p = Process(target = train, args = (subset, linhas, lock))
 			p.start()
 			pp.append(p)
 
 		for p in pp:
 			p.join()
-		csvfile.flush()
-		break
+
+		while not linhas.empty():
+			writer.writerow(linhas.get())
