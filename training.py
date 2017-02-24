@@ -6,7 +6,7 @@ import itertools
 from ann import build_ann
 
 
-def train(param_set, linhas, locktowrite):
+def train(linhas, param_set):
     linha = dict()
     linha['param'] = param_set
     r = read_from_csv('data.csv', param_set)
@@ -59,8 +59,8 @@ def train(param_set, linhas, locktowrite):
     	dtree = tree.DecisionTreeClassifier()
     	dtree.fit(X,y)
 
-    	ann = neural_network.MLPClassifier(hidden_layer_sizes=(100,80), max_iter = 1000)
-    	ann.fit(X,y)
+    	# ann = neural_network.MLPClassifier(hidden_layer_sizes=(100,80), max_iter = 1000)
+    	# ann.fit(X,y)
 
     	for j in range(0, len(sets['new_entry_set'])):
     		verd = sets['new_entry_labels'][j]
@@ -103,9 +103,9 @@ def train(param_set, linhas, locktowrite):
     			dtree_c += 1
 
     		# Neural Network CLASSIFIER
-    		pred = ann.predict(sets['new_entry_set'][j].reshape(1,-1))
-    		if verd == pred:
-    			ann_c += 1
+    		# pred = ann.predict(sets['new_entry_set'][j].reshape(1,-1))
+    		# if verd == pred:
+    		# 	ann_c += 1
 
     #Matrix de confusao
     #print metrics.confusion_matrix(verd_list, pred_list, labels = list(set(make_aligholi_training_label())))
@@ -124,9 +124,8 @@ def train(param_set, linhas, locktowrite):
     #print 'sgdc:', float(float(sgdc_c)/float(counter))*100.0, '%'
     linha['dtree'] = float(float(dtree_c)/float(counter))*100.0
     #print 'dtree:', float(float(dtree_c)/float(counter))*100.0, '%'
-    linha['ann'] = float(float(ann_c)/float(counter))*100.0
+    # linha['ann'] = float(float(ann_c)/float(counter))*100.0
     #print 'ann:', float(float(ann_c)/float(counter))*100.0, '%'
     #print '\n\n\n\n'
-    locktowrite.acquire()
     linhas.put(linha)
-    locktowrite.release()
+    print '.'

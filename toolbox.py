@@ -22,7 +22,6 @@ def make_csv(data, labels):
 		header.append('biref')
 		header.append('pleoc')
 		header.extend(('tex_1', 'tex_2', 'tex_3', 'tex_4'))
-		header.append('ext')
 		header.extend(('opa_l_xpl', 'opa_stddev_xpl', 'opa_l_ppl', 'opa_stddev_ppl'))
 		writer.writerow(header)
 		for i in range(0,len(labels)-1):
@@ -43,7 +42,6 @@ def conf_interval_dict(sample):
 	result['pleoc_l'] = st.norm.interval(conf, loc = np.mean(sample[:,9:10]), scale = np.std(sample[:,9:10]))
 	result['pleoc_a'] = st.norm.interval(conf, loc = np.mean(sample[:,10:11]), scale = np.std(sample[:,10:11]))
 	result['pleoc_b'] = st.norm.interval(conf, loc = np.mean(sample[:,11:12]), scale = np.std(sample[:,11:12]))
-	result['ext'] = st.norm.interval(conf, loc = np.mean(sample[:,12:13]), scale = np.std(sample[:,12:13]))
 	result['tex_1'] = st.norm.interval(conf, loc = np.mean(sample[:,13:14]), scale = np.std(sample[:,13:14]))
 	result['tex_2'] = st.norm.interval(conf, loc = np.mean(sample[:,14:15]), scale = np.std(sample[:,14:15]))
 	result['tex_3'] = st.norm.interval(conf, loc = np.mean(sample[:,15:16]), scale = np.std(sample[:,15:16]))
@@ -167,7 +165,7 @@ def make_pleochroism_color(im_list, light_type):
 		im_lab = extract_info(np.average, im)
 		if(im_lab[0] < min_l[0]):
 			min_l = im_lab
-		elif(im_lab[0] < max_l[0]):
+		if(im_lab[0] > max_l[0]):
 			max_l = im_lab
 	a = LabColor(lab_l = max_l[0], lab_a = max_l[1], lab_b = max_l[2])
 	b = LabColor(lab_l = min_l[0], lab_a = min_l[1], lab_b = min_l[2])
@@ -249,20 +247,6 @@ def make_opacity_param(im_ppl, im_xpl):
 		images.append(to_float_lab(im))
 	return np.append(result, opacity_param(images))
 
-	for filename in os.listdir(folder):
-		if filename.startswith('p'):
-			im = to_float_lab(cv2.imread(folder + filename))
-			images.append(im)
-	result = opacity_param(images)
-
-	images = list()
-	for filename in os.listdir(folder):
-		if filename.startswith('x'):
-			im = to_float_lab(cv2.imread(folder + filename))
-			images.append(im)
-
-	return np.append(result, opacity_param(images))
-
 def iterate_alligholli_dataset(param, normalize=False, pairs=19):
 	#Itera o dataset
 	base_path = './MIfile/MI'
@@ -298,9 +282,6 @@ def iterate_alligholli_dataset(param, normalize=False, pairs=19):
 				if('tex' in param):
 					tex = make_texture_param(im_xpl + im_ppl)
 					arg = np.append(arg, tex)
-				if('ext' in param):
-					ext = extinction_class(im_xpl + im_ppl)
-					arg = np.append(arg, ext)
 				if('opa' in param):
 					opa = make_opacity_param(im_ppl, im_xpl)
 					arg = np.append(arg, opa)
@@ -333,8 +314,6 @@ def read_from_csv(path,param):
 				arg.append(row['biref'])
 			if 'pleoc' in param:
 				arg.append(row['pleoc'])
-			if 'ext' in param:
-				arg.append(row['ext'])
 			if 'tex' in param:
 				arg.extend((row['tex_1'],row['tex_2'],row['tex_3'],row['tex_4']))
 			if 'opa' in param:
@@ -378,8 +357,12 @@ def opacity_param(collection):
 		else:
 			all_l = np.append(all_l, l)
 			all_stddev = np.append(all_stddev, dev)
-	l = np.average(all_l, axis=0)
-	dev = np.average(all_stddev, axis=0)
+
+	l = all_l
+	dev = all_stddev
+	if(len(collection) > 1):
+		l = np.average(all_l, axis=0)
+		dev = np.average(all_stddev, axis=0)
 
 	return np.append(l,dev)
 
@@ -395,7 +378,7 @@ def texture_param(image):
 	return result
 
 #Em uma imagem transforma em float e em LAB
-def to_float_lab(image, normalize = True):
+def to_float_lab(image, normalize = False):
 	image = np.float32(image)
 	image = image / 255.0
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
