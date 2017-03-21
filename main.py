@@ -13,7 +13,7 @@ from functools import partial
 param = ['xpl', 'pleoc', 'biref', 'ppl', 'tex', 'opa']
 
 def makecsv():
-	all_set, labels = iterate_alligholli_dataset(param = param, normalize = False, pairs = 2)
+	all_set, labels = iterate_alligholli_dataset(param = param, normalize = False, pairs = 1)
 	data_conf = make_confidence_interval(all_set, labels)
 	make_csv(all_set, labels)
 
@@ -44,6 +44,34 @@ def train():
 		while not linhas.empty():
 			writer.writerow(linhas.get())
 
+def debug():
+	folder_names = ['Quartzo', 'ortoclásio', 'microclínio']
+	crop_geo_set(folder_names)
+	r = read_from_csv('./data.csv', param)
+
+	knn = neighbors.KNeighborsClassifier(n_neighbors = 1)
+	knn.fit(r['entries'], r['labels'])
+
+	dtree = tree.DecisionTreeClassifier()
+	dtree.fit(r['entries'], r['labels'])
+
+	gdata, glabels = iterate_gathered_data(param)
+
+	counter = 0
+	knn_c = 0
+
+	for i in range(0, len(gdata)):
+		verd = glabels[i]
+		counter += 0
+
+		print 'target', verd
+		# knn
+		print 'knn', knn.predict(gdata[i].reshape(1,-1))
+
+		# dtree
+		print 'dtree', dtree.predict(gdata[i].reshape(1,-1))
+
+
 
 def main(argv):
 	if len(argv) < 2:
@@ -55,6 +83,9 @@ def main(argv):
 	elif argv[1] == 'train':
 		print 'training data	'
 		train()
+	elif argv[1] == 'debug':
+		print 'debug'
+		debug()
 
 	else:
 		'invalid arg'

@@ -11,6 +11,46 @@ from skimage.feature import greycomatrix, greycoprops
 from colormath.color_diff import delta_e_cie2000
 from colormath.color_objects import LabColor
 import scipy.stats as st
+from testopencs import crop_new_image
+
+def crop_geo_set(folder_names):
+	# For each folder
+	for f in folder_names:
+		path = './' + f + '/'
+		subfolders = os.listdir(f)
+
+		for subf in subfolders:
+			subpath = path + '/' + subf + '/'
+
+			files = os.listdir(subpath)
+			imlist = list()
+
+			# Coletando arquivos das pastas
+			for arq in files:
+				imlist.append(cv2.imread(subpath + arq))
+
+			# Cortando as imagens da pasta
+			xpl, ppl = crop_new_image(imlist)
+
+			# Escrever as imagens cortadas em uma nova pasta de teste
+			impath = './train/' + f + '/' + subf + '/'
+			try:
+				os.mkdir('./train/')
+			except:
+				print 'train folder already created'
+			try:
+				os.mkdir('./train/' + f + '/')
+			except:
+				print 'train ' + f + ' already created'
+			try:
+				os.mkdir('./train/' + f + '/' + subf + '/')
+			except:
+				print 'subfolder already created'
+			for i in range(len(xpl)):
+				cv2.imwrite(impath + 'x' + str(i) + '.png', xpl[i])
+			for i in range(len(ppl)):
+				cv2.imwrite(impath + 'p' + str(i) + '.png', ppl[i])
+
 
 def make_csv(data, labels):
 	with open('data.csv', 'w') as csvfile:
@@ -171,7 +211,6 @@ def make_pleochroism_color(im_list, light_type):
 	b = LabColor(lab_l = min_l[0], lab_a = min_l[1], lab_b = min_l[2])
 	return np.asarray(delta_e_cie2000(a, b))
 
-
 def select_training_sets(collection, labels, targets):
 	result = dict()
 	result['new_entry_set'] = list()
@@ -216,7 +255,6 @@ def make_texture_param(im_list):
 			result[j][i] = bob[j][i]
 	return np.average(result, axis=0)
 
-
 def extinction_class(im_list):
 	images = list()
 	for im in im_list:
@@ -247,6 +285,86 @@ def make_opacity_param(im_ppl, im_xpl):
 		images.append(to_float_lab(im))
 	return np.append(result, opacity_param(images))
 
+def iterate_gathered_data(param, pairs=1):
+	base_path = './train/'
+	all_set = list()
+	labels = list()
+
+	folders = os.listdir(base_path)
+
+	for folder in folders:
+
+		folderpath = base_path + folder + '/'
+		im_xpl = list()
+		im_ppl = list()
+
+		label = 0
+		if(folder == 'Quartzo'):
+			label = 11
+		elif(folder == 'ortoclásio'):
+			label = 13
+		elif(folder == 'microclínio'):
+			label = 14
+
+		# Pegar o menor numero de tipo de imagem
+		subfolders = os.listdir(folderpath)
+
+
+
+		for subf in subfolders:
+			subfpath = folderpath + subf + '/'
+
+			files = os.listdir(subfpath)
+
+			ppl_n = 0
+			xpl_n = 0
+			for f in files:
+				if(f.startswith('x')):
+					xpl_n += 1
+				else:
+					ppl_n += 1
+			limit = xpl_n if xpl_n < ppl_n else ppl_n
+
+			for i in range(0,limit):
+
+				im_xpl.append(cv2.imread(subfpath + 'x' + str(i) + '.png'))
+				im_ppl.append(cv2.imread(subfpath + 'p' + str(i) + '.png'))
+
+				all_set.append(extract_params_from_imset(param, im_xpl, im_ppl))
+
+				im_xpl = list()
+				im_ppl = list()
+				labels.append(label)
+
+	return np.asarray(all_set), np.asarray(labels)
+
+def extract_params_from_imset(param, im_xpl, im_ppl, normalize=False):
+	# desired number of pairs
+	arg = np.empty([0,0])
+
+	if('xpl' in param):
+		xpl = make_avg_color(im_xpl, 'x')
+		arg = np.append(arg, xpl)
+	if('ppl' in param):
+		ppl = make_avg_color(im_ppl, 'p')
+		arg = np.append(arg, ppl)
+	if('biref' in param):
+		biref = make_pleochroism_color(im_xpl, 'x')
+		arg = np.append(arg, biref)
+	if('pleoc' in param):
+		pleoc = make_pleochroism_color(im_ppl, 'p')
+		arg = np.append(arg, pleoc)
+	if('tex' in param):
+		tex = make_texture_param(im_xpl + im_ppl)
+		arg = np.append(arg, tex)
+	if('opa' in param):
+		opa = make_opacity_param(im_ppl, im_xpl)
+		arg = np.append(arg, opa)
+
+	if(normalize):
+		arg = preprocessing.normalize(arg[:, np.newaxis], axis = 0).ravel()
+	return arg
+
 def iterate_alligholli_dataset(param, normalize=False, pairs=19):
 	#Itera o dataset
 	base_path = './MIfile/MI'
@@ -265,34 +383,11 @@ def iterate_alligholli_dataset(param, normalize=False, pairs=19):
 			im_xpl.append(cv2.imread(folder + 'x' + str(j) + '.png'))
 			if(j%pairs == 0 or j == 19):
 				# desired number of pairs
-				arg = np.empty([0,0])
+				all_set.append(extract_params_from_imset(param, im_xpl, im_ppl))
 
-				if('xpl' in param):
-					xpl = make_avg_color(im_xpl, 'x')
-					arg = np.append(arg, xpl)
-				if('ppl' in param):
-					ppl = make_avg_color(im_ppl, 'p')
-					arg = np.append(arg, ppl)
-				if('biref' in param):
-					biref = make_pleochroism_color(im_xpl, 'x')
-					arg = np.append(arg, biref)
-				if('pleoc' in param):
-					pleoc = make_pleochroism_color(im_ppl, 'p')
-					arg = np.append(arg, pleoc)
-				if('tex' in param):
-					tex = make_texture_param(im_xpl + im_ppl)
-					arg = np.append(arg, tex)
-				if('opa' in param):
-					opa = make_opacity_param(im_ppl, im_xpl)
-					arg = np.append(arg, opa)
-
-				if(normalize):
-					arg = preprocessing.normalize(arg[:, np.newaxis], axis = 0).ravel()
 				im_xpl = list()
 				im_ppl = list()
-				all_set.append(arg)
 				labels.append(get_aligholi_number_label(i))
-
 
 	return np.asarray(all_set), np.asarray(labels)
 
@@ -388,7 +483,6 @@ def to_float_lab(image, normalize = False):
 		image[:,:,2]  = (image[:,:,2] + 127.0) / 254.0
 
 	return image
-
 
 #Extrai as informacoes da imagem
 #type -> o tipo de informação a ser extraída

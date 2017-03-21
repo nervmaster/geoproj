@@ -20,7 +20,6 @@ def get_extinction_class(collection):
 	print pos
 	exit(1)
 
-
 # Funcao de dist euclidiana
 def distance(p0, p1):
 	'Computa a disntacia euclidiana ao quadrado'
@@ -136,11 +135,12 @@ def crop_new_image(images):
 	global refPt
 	global cropping
 	global image
-	color_input_collection = []
+	ppllist = list()
+	xpllist = list()
 
 	for i in range(0, len(images)):
 		# mostra thumbnails da images
-		image = cv2.imread(images[i])
+		image = images[i]
 		cv2.namedWindow("image" + str(i), cv2.WINDOW_NORMAL)
 		cv2.imshow("image" + str(i), image)
 
@@ -148,9 +148,11 @@ def crop_new_image(images):
 	for i in range(0, len(images)):
 		refPt = []
 		cropping = False
+		xpl = False
+		ppl = False
 
 		# Seta as chamadas de funcao dos eventos
-		image = cv2.imread(images[i])
+		image = images[i]
 		clone = image.copy()
 		cv2.namedWindow("CROP HERE", cv2.WINDOW_NORMAL)
 		cv2.setMouseCallback("CROP HERE", click_and_crop)
@@ -163,7 +165,12 @@ def crop_new_image(images):
 			if key == ord("r"):
 				image = clone.copy()
 
-			elif key == ord("c"):
+			elif key == ord("x"):
+				xpl = True
+				break
+
+			elif key == ord("p"):
+				ppl = True
 				break
 
 		# Pegou a imagem recortada
@@ -172,7 +179,11 @@ def crop_new_image(images):
 			roi = list()
 			for i in range(0, len(refPt), 2):
 				roi.append(clone[refPt[i][1]:refPt[i+1][1], refPt[i][0]:refPt[i+1][0]])
-			color_input_collection.append(extract_color_input(roi))
+			if(xpl):
+				xpllist = xpllist + roi
+			else:
+				ppllist = ppllist + roi
+
 		cv2.destroyWindow("CROP HERE")
 	cv2.destroyAllWindows()
-	return merge_color_input(color_input_collection)
+	return xpllist, ppllist

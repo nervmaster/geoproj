@@ -5,7 +5,6 @@ import csv
 import itertools
 from ann import build_ann
 
-
 def train(linhas, param_set):
     linha = dict()
     linha['param'] = param_set
@@ -128,4 +127,4 @@ def train(linhas, param_set):
     #print 'ann:', float(float(ann_c)/float(counter))*100.0, '%'
     #print '\n\n\n\n'
     linhas.put(linha)
-    print '.'
+    print param_set
