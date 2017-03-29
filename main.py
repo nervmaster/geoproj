@@ -11,13 +11,14 @@ from multiprocessing import Process, Lock, Queue, Pool, Manager
 from functools import partial
 
 param = ['xpl', 'pleoc', 'biref', 'ppl', 'tex', 'opa']
+singles = ['xpl', 'ppl', 'tex', 'opa']
 
 def makecsv():
-	all_set, labels = iterate_alligholli_dataset(param = param, normalize = False, pairs = 1)
-	data_conf = make_confidence_interval(all_set, labels)
+	all_set, labels = iterate_alligholli_dataset(param = param, normalize = False)
+	# data_conf = make_confidence_interval(all_set, labels)
 	make_csv(all_set, labels)
 
-def train():
+def cross_validation():
 	with open('results.csv', 'w') as csvfile:
 		fieldnames = ['param','random','kNN','naive','linear','svm','sgdc','dtree','ann']
 		writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
@@ -28,18 +29,18 @@ def train():
 		m = Manager()
 		linhas = m.Queue()
 		args = list()
-		workers = Pool(4)
-		for L in range(0, len(param) + 1):
+		workers = Pool(2)
+		for L in range(0, len(singles) + 1):
 			if L < 1:
 				continue
 			pp = list()
-			for subset in itertools.combinations(param, L):
+			for subset in itertools.combinations(singles, L):
 				args.append(subset)
 
-			func = partial(train, linhas)
-			workers.map(func, args)
-			workers.close()
-			workers.join()
+		func = partial(train, linhas)
+		workers.map(func, args)
+		workers.close()
+		workers.join()
 
 		while not linhas.empty():
 			writer.writerow(linhas.get())
@@ -81,8 +82,8 @@ def main(argv):
 		print 'creating csv'
 		makecsv()
 	elif argv[1] == 'train':
-		print 'training data	'
-		train()
+		print 'training data'
+		cross_validation()
 	elif argv[1] == 'debug':
 		print 'debug'
 		debug()

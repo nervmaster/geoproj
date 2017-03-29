@@ -51,18 +51,19 @@ def crop_geo_set(folder_names):
 			for i in range(len(ppl)):
 				cv2.imwrite(impath + 'p' + str(i) + '.png', ppl[i])
 
-
-def make_csv(data, labels):
+def make_csv(data, labels, singles = False):
 	with open('data.csv', 'w') as csvfile:
 		writer = csv.writer(csvfile, delimiter = ';')
 		header = list()
 		header.append('label')
 		header.extend(('xpl_l', 'xpl_a', 'xpl_b'))
-		header.extend(('ppl_l', 'ppl_a', 'ppl_b'))
-		header.append('biref')
-		header.append('pleoc')
+		if not singles:
+			header.extend(('ppl_l', 'ppl_a', 'ppl_b'))
+			header.append('biref')
+			header.append('pleoc')
 		header.extend(('tex_1', 'tex_2', 'tex_3', 'tex_4'))
-		header.extend(('opa_l_xpl', 'opa_stddev_xpl', 'opa_l_ppl', 'opa_stddev_ppl'))
+		if not singles:
+			header.extend(('opa_l_xpl', 'opa_stddev_xpl', 'opa_l_ppl', 'opa_stddev_ppl'))
 		writer.writerow(header)
 		for i in range(0,len(labels)-1):
 			writer.writerow(np.append(labels[i], data[i]))
@@ -365,11 +366,12 @@ def extract_params_from_imset(param, im_xpl, im_ppl, normalize=False):
 		arg = preprocessing.normalize(arg[:, np.newaxis], axis = 0).ravel()
 	return arg
 
-def iterate_alligholli_dataset(param, normalize=False, pairs=19):
+def iterate_alligholli_dataset(param, normalize=False):
 	#Itera o dataset
 	base_path = './MIfile/MI'
 	all_set = list()
 	labels = list()
+
 	#Pegar os arquivos e mandar para as funcoes
 	#iterar tudo e criar listas com arquivos
 	labels = list()
@@ -379,16 +381,13 @@ def iterate_alligholli_dataset(param, normalize=False, pairs=19):
 		im_ppl = list()
 
 		for j in range(1,20):
-			im_ppl.append(cv2.imread(folder + 'p' + str(j) + '.png'))
 			im_xpl.append(cv2.imread(folder + 'x' + str(j) + '.png'))
-			if(j%pairs == 0 or j == 19):
-				# desired number of pairs
+			for k in range(1,20):
+				im_ppl.append(cv2.imread(folder + 'p' + str(k) + '.png'))
 				all_set.append(extract_params_from_imset(param, im_xpl, im_ppl))
-
-				im_xpl = list()
-				im_ppl = list()
 				labels.append(get_aligholi_number_label(i))
-
+				im_ppl = list()
+			im_xpl = list()
 	return np.asarray(all_set), np.asarray(labels)
 
 def read_from_csv(path,param):
