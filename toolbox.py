@@ -14,6 +14,7 @@ from colormath.color_objects import LabColor
 import scipy.stats as st
 from testopencs import crop_new_image
 import math
+import gc
 
 
 def crop_geo_set(folder_names):
@@ -322,58 +323,60 @@ def make_opacity_param(im_ppl, im_xpl):
         images.append(to_float_lab(im))
     return np.append(result, opacity_param(images))
 
+def get_mineral_name_number(str):
+    if "Biotita" in str:
+        return 3
+    elif "Quartzo" in str:
+        return 11
+    elif "Ortoclasio" in str:
+        return 13    
 
-def iterate_gathered_data(param, pairs=1):
-    base_path = './train/'
-    all_set = list()
-    labels = list()
 
-    folders = os.listdir(base_path)
+def iterate_gathered_data(arq, writer, param, pairs=1):
+    base_path = './Teste/'
 
-    for folder in folders:
+    root = os.listdir(base_path)
 
-        folderpath = base_path + folder + '/'
-        im_xpl = list()
-        im_ppl = list()
+    for mineral in root:
+        print mineral
+            
+        xpl = list()
+        ppl = list()
+        all_set = list()
+        labels = list()
 
-        label = 0
-        if(folder == 'Quartzo'):
-            label = 11
-        elif(folder == 'ortoclásio'):
-            label = 13
-        elif(folder == 'microclínio'):
-            label = 14
+        mineralpath = base_path + mineral + '/'
+        
+        photos_folders = os.listdir(mineralpath)
 
-        # Pegar o menor numero de tipo de imagem
-        subfolders = os.listdir(folderpath)
+        for folder in photos_folders:
+            photopath = mineralpath + folder + '/'
 
-        for subf in subfolders:
-            subfpath = folderpath + subf + '/'
+            photos = os.listdir(photopath)
 
-            files = os.listdir(subfpath)
+            if "NP" in folder:
+                lista = ppl
+            else:
+                lista = xpl
 
-            ppl_n = 0
-            xpl_n = 0
-            for f in files:
-                if(f.startswith('x')):
-                    xpl_n += 1
-                else:
-                    ppl_n += 1
-            limit = xpl_n if xpl_n < ppl_n else ppl_n
+            for i in photos[:40]:
+                lista.append(cv2.imread(photopath + i))
+        
+        # Coloca label e row
+        label_number = get_mineral_name_number(mineral)
+        for x in xpl:
+            for p in ppl:
+                all_set.append(extract_params_from_imset(param,[x],[p]))
+                labels.append(label_number)
 
-            for i in range(0, limit):
+        for label,row in zip(labels, all_set):
+            writer.writerow(np.append(label,row))
+        arq.flush()
+        del labels
+        del xpl
+        del ppl
+        del all_set
 
-                im_xpl.append(cv2.imread(subfpath + 'x' + str(i) + '.png'))
-                im_ppl.append(cv2.imread(subfpath + 'p' + str(i) + '.png'))
-
-                all_set.append(extract_params_from_imset(
-                    param, im_xpl, im_ppl))
-
-                im_xpl = list()
-                im_ppl = list()
-                labels.append(label)
-
-    return np.asarray(all_set), np.asarray(labels)
 
 
 def extract_params_from_imset(param, im_xpl, im_ppl, normalize=False):
@@ -415,9 +418,10 @@ def iterate_alligholli_dataset(arq, writer, param,normalize=False):
 
     print 'lendo imagens'
     images = list()
-    new_images = list()
     labels = list()
     for i in range(1, 84):
+        images = list()
+        labels = list()
         folder = base_path + str(i) + '/'
         for j in range(1, 20):
             for k in range(1, 20):
@@ -443,15 +447,16 @@ def iterate_alligholli_dataset(arq, writer, param,normalize=False):
         data = list()
         for i in xrange(0, len(images), 2):
             data.append(extract_params_from_imset(param, [images[i]], [images[i + 1]]))
-        images = list()
+        del images
 
         # escrever no arquivo
         for label,row in zip(labels,data):
             writer.writerow(np.append(label,row))
         # clean
         arq.flush()
-        labels = list()
-        data = list()
+        del labels
+        del data
+        gc.collect()
 
 
 def read_from_csv(path, param):
