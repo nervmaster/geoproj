@@ -419,10 +419,14 @@ def iterate_alligholli_dataset(arq, writer, param,normalize=False):
     print 'lendo imagens'
     images = list()
     labels = list()
+    
     for i in range(1, 84):
         images = list()
         labels = list()
         folder = base_path + str(i) + '/'
+        # Fazer um programa paralelo
+        # um processo para ficar lendo e escrevendo
+        # outros passeando pelos arquivos
         for j in range(1, 20):
             for k in range(1, 20):
                 images.append(cv2.imread(folder + 'x' + str(j) + '.png'))
