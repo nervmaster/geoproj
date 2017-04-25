@@ -51,16 +51,27 @@ def cross_validation(argv):
             for sub in itertools.combinations(singles, i):
                 args.append((linhas, sub, filename))
             break
+            
 
         mpr = [pool.apply_async(train, arg) for arg in args]
         print mpr
         pool.close()
+        #pool.join()
 
-        print [r.get() for r in mpr]
+        while True:
+            try:
+                [r.get(timeout = 1) for r in mpr]
+                break
+            except:
+                print linhas.get()
+        
 
-        print 'escrevendo'
+        #print [r.get() for r in mpr]
+
+        #print 'escrevendo'
         while not linhas.empty():
-            writer.writerow(linhas.get())
+            print linhas.get()
+            #writer.writerow(linhas.get())
 
 
 def maketraincsv(argv):
