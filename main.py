@@ -15,6 +15,7 @@ param = ['xpl', 'pleoc', 'biref', 'ppl', 'tex', 'opa']
 singles = ['xpl', 'ppl', 'tex', 'opa']
 teste = ['xpl', 'ppl', 'tex', 'opa']
 
+
 def multi_run_wrapper(args):
     return train(*args)
 
@@ -25,7 +26,7 @@ def makecsv(argv):
         exit(1)
     filename = argv[0]
     arq, writer = make_csv(filename)
-    iterate_alligholli_dataset(arq, writer, param = param, normalize = False)
+    iterate_alligholli_dataset(arq, writer, param=param, normalize=False)
     arq.close()
 
 
@@ -46,17 +47,21 @@ def cross_validation(argv):
         pool = Pool(nworkers)
         args = list()
 
-        for i in range(1, len(singles)+1):
+        for i in range(1, len(singles) + 1):
             for sub in itertools.combinations(singles, i):
                 args.append((linhas, sub, filename))
-        
-        pool.map(multi_run_wrapper, args)
+            break
+
+        mpr = [pool.apply_async(train, arg) for arg in args]
+        print mpr
         pool.close()
-        pool.join()
+
+        print [r.get() for r in mpr]
 
         print 'escrevendo'
         while not linhas.empty():
             writer.writerow(linhas.get())
+
 
 def maketraincsv(argv):
     if len(argv) < 1:
@@ -67,8 +72,9 @@ def maketraincsv(argv):
     iterate_gathered_data(arq, writer, param)
     arq.close()
 
+
 def debug(datafile, testfile):
-    #will change this whole function
+    # will change this whole function
     with open('evaluate_results.csv', 'w') as csvfile:
         fieldnames = ['param', 'kNN', 'dtree']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -76,14 +82,15 @@ def debug(datafile, testfile):
         m = Manager()
         linhas = m.Queue()
 
-        for i in range(1, len(singles)+1):
+        for i in range(1, len(singles) + 1):
             for sub in itertools.combinations(singles, i):
                 evaluate(linhas, sub, datafile, testfile)
 
         print 'escrevendo'
         while not linhas.empty():
             writer.writerow(linhas.get())
-   
+
+
 def main(argv):
     if len(argv) < 1:
         print 'Missing function call'

@@ -71,7 +71,8 @@ def make_csv(filepath):
     header.append('biref')
     header.append('pleoc')
     header.extend(('tex_1', 'tex_2', 'tex_3', 'tex_4'))
-    header.extend(('opa_l_xpl','opa_l_ppl','opa_stddev_xpl','opa_stddev_ppl'))
+    header.extend(('opa_l_xpl', 'opa_l_ppl',
+                   'opa_stddev_xpl', 'opa_stddev_ppl'))
     writer.writerow(header)
     arq.flush()
     return arq, writer
@@ -323,13 +324,14 @@ def make_opacity_param(im_ppl, im_xpl):
         images.append(to_float_lab(im))
     return np.append(result, opacity_param(images))
 
+
 def get_mineral_name_number(str):
     if "Biotita" in str:
         return 3
     elif "Quartzo" in str:
         return 11
     elif "Ortoclasio" in str:
-        return 13    
+        return 13
 
 
 def iterate_gathered_data(arq, writer, param, pairs=1):
@@ -339,14 +341,14 @@ def iterate_gathered_data(arq, writer, param, pairs=1):
 
     for mineral in root:
         print mineral
-            
+
         xpl = list()
         ppl = list()
         all_set = list()
         labels = list()
 
         mineralpath = base_path + mineral + '/'
-        
+
         photos_folders = os.listdir(mineralpath)
 
         for folder in photos_folders:
@@ -361,22 +363,21 @@ def iterate_gathered_data(arq, writer, param, pairs=1):
 
             for i in photos[:40]:
                 lista.append(cv2.imread(photopath + i))
-        
+
         # Coloca label e row
         label_number = get_mineral_name_number(mineral)
         for x in xpl:
             for p in ppl:
-                all_set.append(extract_params_from_imset(param,[x],[p]))
+                all_set.append(extract_params_from_imset(param, [x], [p]))
                 labels.append(label_number)
 
-        for label,row in zip(labels, all_set):
-            writer.writerow(np.append(label,row))
+        for label, row in zip(labels, all_set):
+            writer.writerow(np.append(label, row))
         arq.flush()
         del labels
         del xpl
         del ppl
         del all_set
-
 
 
 def extract_params_from_imset(param, im_xpl, im_ppl, normalize=False):
@@ -406,7 +407,27 @@ def extract_params_from_imset(param, im_xpl, im_ppl, normalize=False):
     return arg
 
 
-def iterate_alligholli_dataset(arq, writer, param,normalize=False):
+def parse_folder(foldername, fila, label, queue):
+    def st(aug): return iaa.Sometimes(0.95, aug)
+
+    for i in range(1, 20):
+        for j in range(1, 20):
+            pass
+            # append x images
+            # append p images
+            # append label
+
+            # Do img aug on list
+
+            # extract param from img aug
+
+            # put them all on the queue
+
+            # END
+    pass
+
+
+def iterate_alligholli_dataset(arq, writer, param, normalize=False):
     # Itera o dataset
     base_path = './MIfile/MI'
     all_set = list()
@@ -419,7 +440,7 @@ def iterate_alligholli_dataset(arq, writer, param,normalize=False):
     print 'lendo imagens'
     images = list()
     labels = list()
-    
+
     for i in range(1, 84):
         images = list()
         labels = list()
@@ -434,28 +455,31 @@ def iterate_alligholli_dataset(arq, writer, param,normalize=False):
                 labels.append(get_aligholi_number_label(i))
 
         seq = iaa.Sequential([
-        iaa.Crop(px=(0, 16)),
-        iaa.Fliplr(0.95),
-        iaa.Flipud(0.95),
-        iaa.GaussianBlur(sigma=(0, 3.0)),
-        st(iaa.Affine(
-            scale=(0.8, 1.2),
-            rotate=(-180, 180)
-        ))],
-        random_order=True
+            iaa.Crop(px=(0, 16)),
+            iaa.Fliplr(0.95),
+            iaa.Flipud(0.95),
+            iaa.GaussianBlur(sigma=(0, 3.0)),
+            st(iaa.Affine(
+                scale=(0.8, 1.2),
+                rotate=(-180, 180)
+            ))],
+            random_order=True
         )
 
         images = seq.augment_images(images)
-        
+
         # tirar parametros
         data = list()
         for i in xrange(0, len(images), 2):
-            data.append(extract_params_from_imset(param, [images[i]], [images[i + 1]]))
+            data.append(extract_params_from_imset(
+                param, [images[i]], [images[i + 1]]))
         del images
 
+        # use queue para escrever no arquivo
+
         # escrever no arquivo
-        for label,row in zip(labels,data):
-            writer.writerow(np.append(label,row))
+        for label, row in zip(labels, data):
+            writer.writerow(np.append(label, row))
         # clean
         arq.flush()
         del labels
