@@ -21,12 +21,12 @@ def multi_run_wrapper(args):
 
 
 def makecsv(argv):
-    if len(argv) < 2:
+    if len(argv) < 1:
         print 'missing <filename>'
         exit(1)
     filename = argv[0]
     arq, writer = make_csv(filename)
-    iterate_alligholli_dataset(arq, writer, param=param, normalize=False)
+    iterate_alligholli_dataset(arq, writer, param=param)
     arq.close()
 
 
@@ -54,24 +54,20 @@ def cross_validation(argv):
             
 
         mpr = [pool.apply_async(train, arg) for arg in args]
-        print mpr
         pool.close()
-        #pool.join()
-
+        
         while True:
             try:
                 [r.get(timeout = 1) for r in mpr]
                 break
             except:
-                print linhas.get()
+                writer.writerow(linhas.get())
         
 
-        #print [r.get() for r in mpr]
-
-        #print 'escrevendo'
+        
+        print 'escrevendo'
         while not linhas.empty():
-            print linhas.get()
-            #writer.writerow(linhas.get())
+            writer.writerow(linhas.get())
 
 
 def maketraincsv(argv):
