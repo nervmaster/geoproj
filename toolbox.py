@@ -411,30 +411,33 @@ def extract_params_from_imset(param, im_xpl, im_ppl, normalize=False):
 def parse_folder(folder, label, param, fila_data, fila_label):
     def st(aug): return iaa.Sometimes(0.95, aug)
     print folder
-    #Get all images from HD
+    # Get all images from HD
+    images = list()
+    labels = list()
+
     for i in range(1, 20):
-        print i, folder
         x = cv2.imread(folder + 'x' + str(i) + '.png')
         for j in range(1, 20):
-                images.append(x)
-                images.append(cv2.imread(folder + 'p' + str(j) + '.png'))
-                labels.append(label)
+            images.append(x)
+            images.append(cv2.imread(folder + 'p' + str(j) + '.png'))
+            labels.append(label)
+
     print 'done with hd files', folder
-    #With list do the augmentations
+    # With list do the augmentations
     seq = iaa.Sequential([
-            iaa.Crop(px=(0, 16)),
-            iaa.Fliplr(0.95),
-            iaa.Flipud(0.95),
-            iaa.GaussianBlur(sigma=(0, 3.0)),
-            st(iaa.Affine(
-                scale=(0.8, 1.2),
-                rotate=(-180, 180)
-            ))],
-            random_order=True
-        )
+        iaa.Crop(px=(0, 16)),
+        iaa.Fliplr(0.95),
+        iaa.Flipud(0.95),
+        iaa.GaussianBlur(sigma=(0, 3.0)),
+        st(iaa.Affine(
+            scale=(0.8, 1.2),
+            rotate=(-180, 180)
+        ))],
+        random_order=True
+    )
 
     images = seq.augment_images(images)
-    
+
     # extract param from img aug
     data = list()
     for i in xrange(0, len(images), 2):
@@ -448,42 +451,43 @@ def parse_folder(folder, label, param, fila_data, fila_label):
     # END
 
     print 'fim', folder
-    
 
 
 def iterate_alligholli_dataset(arq, writer, param):
     # Itera o dataset
     base_path = './MIfile/MI'
-    
+
     print 'iniciando paralelismo'
-    #iniciar o paralelismo
+    # iniciar o paralelismo
     pool = Pool(2)
     args = list()
 
     print 'iniciando filas'
-    #iniciar as filas
+    # iniciar as filas
     m = Manager()
     fila_data = m.Queue()
     fila_label = m.Queue()
-    
+
     mpr = list()
     print 'iniciando processos'
     for i in range(1, 84):
         folder = base_path + str(i) + '/'
         label = get_aligholi_number_label(i)
-        mpr.append(pool.apply_async(parse_folder, (folder, label, param, fila_data, fila_label)))
+        mpr.append(pool.apply_async(
+            parse_folder, (folder, label, param, fila_data, fila_label)))
     pool.close()
     print 'rotina de escrita durante os processos'
     while True:
         try:
-            [r.get(timeout = 1) for r in mpr]
+            [r.get(timeout=1) for r in mpr]
             break
         except:
             rows = fila_data.get()
             labels = fila_label.get()
-            for label, row in zip(labels, data):
+            for label, row in zip(labels, rows):
                 writer.writerow(np.append(label, row))
             arq.flush()
+
     print 'escrevendo os remanescentes'
     while not fila_label.empty():
         rows = fila_data.get()
@@ -492,6 +496,7 @@ def iterate_alligholli_dataset(arq, writer, param):
             writer.writerow(np.append(label, row))
 
     arq.flush()
+
 
 def read_from_csv(path, param):
     result = dict()
