@@ -333,52 +333,134 @@ def get_mineral_name_number(str):
         return 11
     elif "Ortoclasio" in str:
         return 13
+    elif "Microclínio" in str:
+        return 14
+    elif "Plagiocl" in str:
+        return 12
+    elif "Mica" in str:
+        return 14
+
+
+def par_parse_geofolder(path,label, param, fila_data, fila_label):
+    def st(aug): return iaa.Sometimes(0.95, aug)
+    print path
+    
+    # Get all images from HD
+    ppl = list()
+    xpl = list()
+    
+    labels = list()
+
+    photos_folders = os.listdir(path)
+
+    for folder in photos_folders:
+        
+        lista = xpl
+        if 'NP' in folder or 'np' in folder:
+            lista = ppl
+        
+        photospath = path + folder + '/'
+        photos = os.listdir(photospath)
+
+        for photo in photos:
+            lista.append(cv2.imread(photospath + photo))
+    
+    # Create image list
+    images = list()
+    for x in xpl:
+        for p in ppl:
+            images.append(x)
+            images.append(p)
+
+    del xpl
+    del ppl
+
+    # With list do the augmentations
+    seq = iaa.Sequential([
+        iaa.Crop(px=(0, 16)),
+        iaa.Fliplr(0.95),
+        iaa.Flipud(0.95),
+        iaa.GaussianBlur(sigma=(0, 3.0)),
+        st(iaa.Affine(
+            scale=(0.8, 1.2),
+            rotate=(-180, 180)
+        ))],
+        random_order=True
+    )
+
+    images = seq.augment_images(images)
+
+    # extract param from img aug
+    data = list()
+    labels = list()
+    
+    for i in xrange(0, len(images), 2):
+        data.append(extract_params_from_imset(
+            param, [images[i]], [images[i + 1]]))
+
+
+    # put them all on the queue
+    fila_data.put(data)
+    fila_label.put(labels)
+
+    # END
+    
 
 
 def iterate_gathered_data(arq, writer, param, pairs=1):
-    base_path = './Teste/'
+
+    print 'iniciando paralelismo'
+    # iniciar o paralelismo
+    pool = Pool(2)
+    args = list()
+
+    print 'iniciando filas'
+    # iniciar as filas
+    m = Manager()
+    fila_data = m.Queue()
+    fila_label = m.Queue()
+
+    mpr = list()
+    print 'iniciando processos' 
+    base_path = './Teste2/'
 
     root = os.listdir(base_path)
 
-    for mineral in root:
-        print mineral
+    for envelope in root:
+        envelopepath = base_path + envelope + '/'
 
-        xpl = list()
-        ppl = list()
-        all_set = list()
-        labels = list()
+        minerals = os.listdir(envelopepath)
 
-        mineralpath = base_path + mineral + '/'
+        for mineral in minerals:
+            mineralpath = envelopepath + mineral + '/'
+            label = get_mineral_name_number(mineral)
+            mpr.append(pool.apply_async(par_parse_geofolder, (mineralpath, label, param, fila_data, fila_label)))
 
-        photos_folders = os.listdir(mineralpath)
+    pool.close()
 
-        for folder in photos_folders:
-            photopath = mineralpath + folder + '/'
+    print 'rotina de escrita durante os processos'
+    while True:
+        try:
+            [r.get(timeout=1) for r in mpr]
+            break
+        except:
+            rows = fila_data.get()
+            labels = fila_label.get()
+            for label, row in zip(labels, rows):
+                writer.writerow(np.append(label, row))
+            arq.flush()
 
-            photos = os.listdir(photopath)
-
-            if "NP" in folder:
-                lista = ppl
-            else:
-                lista = xpl
-
-            for i in photos[:40]:
-                lista.append(cv2.imread(photopath + i))
-
-        # Coloca label e row
-        label_number = get_mineral_name_number(mineral)
-        for x in xpl:
-            for p in ppl:
-                all_set.append(extract_params_from_imset(param, [x], [p]))
-                labels.append(label_number)
-
-        for label, row in zip(labels, all_set):
+    print 'escrevendo os remanescentes'
+    while not fila_label.empty():
+        rows = fila_data.get()
+        labels = fila_data.get()
+        for label, row in zip(labels, rows):
             writer.writerow(np.append(label, row))
-        arq.flush()
-        del labels
-        del xpl
-        del ppl
-        del all_set
+
+    arq.flush()
+
+
+
 
 
 def extract_params_from_imset(param, im_xpl, im_ppl, normalize=False):
@@ -422,7 +504,6 @@ def parse_folder(folder, label, param, fila_data, fila_label):
             images.append(cv2.imread(folder + 'p' + str(j) + '.png'))
             labels.append(label)
 
-    print 'done with hd files', folder
     # With list do the augmentations
     seq = iaa.Sequential([
         iaa.Crop(px=(0, 16)),
@@ -444,13 +525,11 @@ def parse_folder(folder, label, param, fila_data, fila_label):
         data.append(extract_params_from_imset(
             param, [images[i]], [images[i + 1]]))
     del images
-    print 'putting data on queue', folder
     # put them all on the queue
     fila_data.put(data)
     fila_label.put(labels)
     # END
 
-    print 'fim', folder
 
 
 def iterate_alligholli_dataset(arq, writer, param):
@@ -459,7 +538,7 @@ def iterate_alligholli_dataset(arq, writer, param):
 
     print 'iniciando paralelismo'
     # iniciar o paralelismo
-    pool = Pool(2)
+    pool = Pool(4)
     args = list()
 
     print 'iniciando filas'
@@ -469,7 +548,7 @@ def iterate_alligholli_dataset(arq, writer, param):
     fila_label = m.Queue()
 
     mpr = list()
-    print 'iniciando processos'
+    print 'iniciando processos' 
     for i in range(1, 84):
         folder = base_path + str(i) + '/'
         label = get_aligholi_number_label(i)
