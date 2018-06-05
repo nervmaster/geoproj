@@ -3,18 +3,14 @@ import csv
 
 class Dataset(ABC):
     def __init__(self, paramNames, csvFileName = None):
-        # ParamNames must be passed as arg for the desired parameters
-        # Checks if has a csvFileName
-        # if not parse files
-        # if yes load the csv
-        self.__data = [] 
-        self.__label = [] 
-        self.__paramNames = paramNames 
-        self.__csvFileName = csvFileName
+        self._data = []
+        self._label = []
+        self._paramNames = paramNames 
+        self._csvFileName = csvFileName
 
 
     def getData(self):
-        return self.__data, self.__label
+        return self._data, self._label
 
     @abstractmethod
     def parseFiles(self):
@@ -22,9 +18,9 @@ class Dataset(ABC):
 
     def __createCsvWriter(self, csvFileName, headerList):
         if csvFileName is None:
-            csvFileName = self.__csvFileName
+            csvFileName = self._csvFileName
         if headerList is None:
-            headerList = self.__paramNames
+            headerList = self._paramNames
         
         try:
             arq = open(csvFileName, 'w')
@@ -39,13 +35,13 @@ class Dataset(ABC):
 
     def writeCsv(self, labelColumnName = 'label' ,csvFileName = None, headerList = None):
         if csvFileName is None:
-            csvFileName = self.__csvFileName
+            csvFileName = self._csvFileName
         if headerList is None:
-            headerList = self.__paramNames
+            headerList = self._paramNames
         
         with csv.writer(csvFileName, delimiter=';') as writer:
             writer.writerow([labelColumnName].extend(self.__paramNames))
-            for label, data in zip(self.__label, self.__data):
+            for label, data in zip(self._label, self._data):
                 row = []
                 row.append(label)
                 for elem in data:
@@ -55,9 +51,9 @@ class Dataset(ABC):
     
     def readCsv(self, labelColumnName = 'label', csvFileName = None, headerList = None):
         if csvFileName is None:
-            csvFileName = self.__csvFileName
+            csvFileName = self._csvFileName
         if headerList is None:
-            headerList = self.__paramNames
+            headerList = self._paramNames
 
         with open(csvFileName, 'r') as csvFile:
             reader = csv.DictReader(csvFile, delimiter=';')
@@ -65,7 +61,7 @@ class Dataset(ABC):
                 newData = list()
                 for columnName, value in row.items() :
                     if columnName == labelColumnName:
-                        self.__label.append(value)
+                        self._label.append(value)
                     else:
                         newData.append(value)
-            self.__data.append(newData)
+            self._data.append(newData)
