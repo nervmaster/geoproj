@@ -2,9 +2,9 @@ from datasets.cdmas import CDMas
 
 print("Hello World!")
 
-ds = CDMas(csvFileName = "hello.csv", paramNames = ['number'])
+ds = CDMas(csvFileName = "hello.csv", paramNames = ['avg_color_xpl', 'avg_color_ppl'])
 ds.parseFiles()
-print(ds.getData())
+ds.writeCsv()
 
 # from toolbox import *
 # from sklearn import neural_network, linear_model, svm, naive_bayes, neighbors, metrics, tree

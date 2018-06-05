@@ -1,9 +1,22 @@
 from .dataset import Dataset
+import tools.toolbox as tb
+from multiprocessing import Pool, cpu_count, Manager
+
+def parseFolder(folder, label, listLabel, listData):
+    for i in range(1, 20):
+        x = tb.readImage(folder + 'x' + str(i) + '.png')
+        y = tb.readImage(folder + 'p' + str(i) + '.png')
+        data = []
+        data.append(tb.extractParams('', x))
+        data.append(tb.extractParams('', y))
+        listLabel.append(label)
+        listData.append(data)
+            
 
 class CDMas(Dataset):
     def __init__(self, paramNames = None, csvFileName = None):
         Dataset.__init__(self, paramNames = paramNames, csvFileName = csvFileName)
-    
+        
     def __getLabelFromFolder(self, folder):
         if folder <= 5:
             return 'Anthophilite'
@@ -42,20 +55,20 @@ class CDMas(Dataset):
         else:
             return 'Garnet'
 
-    def __parseFolder(self, folder, label):
-        for i in range(1, 10):
-            # use toolbox to read the file here
-            self._data.append([i])
-            self._label.append(label)
-
-
     def parseFiles(self):
-        base_path = '../MIfile/MI'
+        with Manager() as manager:
+            labelList = manager.list()
+            dataList = manager.list()
 
-        for i in range(1, 84):
-            folder = base_path + str(i) + '/'
-            label = self.__getLabelFromFolder(i)
-            self.__parseFolder(folder, label)
-
-
-
+            base_path = './MIfile/MI'
+            threads = []
+            pool = Pool()
+            for i in range(1, 84):
+                folder = base_path + str(i) + '/'
+                label = self.__getLabelFromFolder(i)
+                threads.append(pool.apply_async(parseFolder, (folder, label, labelList, dataList)))
+            pool.close()
+            [t.get() for t in threads]
+            for label, data in zip(labelList, dataList):
+                self._label.append(label)
+                self._data.append(data)

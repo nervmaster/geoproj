@@ -38,15 +38,19 @@ class Dataset(ABC):
             csvFileName = self._csvFileName
         if headerList is None:
             headerList = self._paramNames
-        
-        with csv.writer(csvFileName, delimiter=';') as writer:
-            writer.writerow([labelColumnName].extend(self.__paramNames))
+
+        with open(csvFileName,'w') as arq:
+            writer = csv.writer(arq, delimiter=';')
+            header = [labelColumnName]
+            [header.append(x) for x in self._paramNames]
+            writer.writerow(header)
             for label, data in zip(self._label, self._data):
                 row = []
                 row.append(label)
                 for elem in data:
-                    row.append(elem)
+                    row.append(elem.tolist())
                 writer.writerow(row)
+                
         
     
     def readCsv(self, labelColumnName = 'label', csvFileName = None, headerList = None):
