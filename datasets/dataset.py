@@ -1,5 +1,15 @@
 from abc import ABC, abstractmethod
+from tools.param_enum import Param
+import tools.toolbox as tb
 import csv
+
+def extractGeoParams(paramNames, xplList, pplList, pairType='all'):
+    for xpl in xplList:
+        for ppl in pplList:
+            if Param.AVERAGE in paramNames:
+                data.append()
+                
+
 
 class Dataset(ABC):
     def __init__(self, paramNames, csvFileName = None):
@@ -7,6 +17,7 @@ class Dataset(ABC):
         self._label = []
         self._paramNames = paramNames 
         self._csvFileName = csvFileName
+        
 
 
     def getData(self):
