@@ -3,13 +3,13 @@ from datasets.cdgeo import CDGeo
 
 print("Hello World!")
 
-ds = CDMas(csvFileName = "hello.csv", paramNames = ['avg_color_xpl', 'avg_color_ppl'])
-ds.parseFiles()
-ds.writeCsv()
+# ds = CDMas(csvFileName = "hello.csv", paramNames = ['avg_color_xpl', 'avg_color_ppl'])
+# ds.parseFiles()
+# ds.writeCsv()
 
-ds = CDGeo(csvFileName = "cdgeo.csv", paramNames = ['avg_color_xpl', 'avg_color_ppl'])
-ds.parseFiles()
-ds.writeCsv()
+# ds = CDGeo(csvFileName = "cdgeo.csv", paramNames = ['avg_color_xpl', 'avg_color_ppl'])
+# ds.parseFiles()
+# ds.writeCsv()
 
 # from toolbox import *
 # from sklearn import neural_network, linear_model, svm, naive_bayes, neighbors, metrics, tree

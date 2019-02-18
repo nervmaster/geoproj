@@ -1,4 +1,6 @@
 Banco de dados Final/
 MIfile/
+env/
+pyvenv.cfg
 *.csv
 *__*/
