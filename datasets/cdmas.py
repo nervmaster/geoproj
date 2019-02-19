@@ -1,12 +1,15 @@
 from .dataset import Dataset
 import tools.toolbox as tb
 from multiprocessing import Pool, cpu_count, Manager
+from .units.mineralunit import MineralUnit
 
 
-def parseFolder(folder, pplList, xplList):
+def parseFolder(folder, unitList, label):
     for i in range(1, 20):
-        xplList.append(tb.readImage(folder + 'x' + str(i) + '.png'))
-        pplList.append(tb.readImage(folder + 'p' + str(i) + '.png'))
+        unit = MineralUnit(label)
+        unit.readPpl(folder + 'p' + str(i) + '.png')
+        unit.readXpl(folder + 'x' + str(i) + '.png')
+        unitList.append(unit)
 
 class CDMas(Dataset):
     def __init__(self, paramNames = None, csvFileName = None):
@@ -55,18 +58,11 @@ class CDMas(Dataset):
             base_path = './MIfile/MI'
             threads = []
             pool = Pool()
-            ppl = [manager.list() for x in range(84)]
-            xpl = [manager.list() for x in range(84)]
-            labels = []
+            units = manager.list()
             for i in range(1, 84):
                 folder = base_path + str(i) + '/'
-                labels.append(self.__getLabelFromFolder(i))
-                threads.append(pool.apply_async(parseFolder, (folder, ppl[i], xpl[i])))
+                label = self.__getLabelFromFolder(i)
+                threads.append(pool.apply_async(parseFolder, (folder, units, label)))
             pool.close()
             [t.get() for t in threads]
-            # Now it normalizes the data for the object attributes
-            for xplFolderList, pplFolderList, label in zip(xpl, ppl, labels):
-                self._label = label
-                self._xpl.append(xplFolderList)
-                self._ppl.append(pplFolderList)
-                
+            self._units = [x for x in units]   

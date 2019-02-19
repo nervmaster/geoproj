@@ -3,20 +3,15 @@ from tools.param_enum import Param
 import tools.toolbox as tb
 import csv
 from multiprocessing import Pool, cpu_count, Manager
-
+from datasets.units.unit import Unit
 
 class Dataset(ABC):
     def __init__(self, csvFileName = None, paramNames = None):
-        self._data = {}
-        self._label = []
+        self._units = []
         self._paramNames = paramNames
         self._csvFileName = csvFileName
-        self._ppl = []
-        self._xpl = []
-
 
     def getData(self):
-        return self._data, self._label
         pass
 
     @abstractmethod
@@ -24,8 +19,9 @@ class Dataset(ABC):
         pass
     
     def extractInfo(self):
-        pass
-    
+        for unit in self._units:
+            unit.extract(Param.AVERAGE)
+
     def __createCsvWriter(self, csvFileName, headerList):
         if csvFileName is None:
             csvFileName = self._csvFileName
