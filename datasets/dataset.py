@@ -2,22 +2,17 @@ from abc import ABC, abstractmethod
 from tools.param_enum import Param
 import tools.toolbox as tb
 import csv
-
-def extractGeoParams(paramNames, xplList, pplList, pairType='all'):
-    for xpl in xplList:
-        for ppl in pplList:
-            if Param.AVERAGE in paramNames:
-                data.append()
-                
+from multiprocessing import Pool, cpu_count, Manager
 
 
 class Dataset(ABC):
-    def __init__(self, paramNames, csvFileName = None):
-        self._data = []
+    def __init__(self, csvFileName = None, paramNames = None):
+        self._data = {}
         self._label = []
-        self._paramNames = paramNames 
+        self._paramNames = paramNames
         self._csvFileName = csvFileName
-        
+        self._ppl = []
+        self._xpl = []
 
 
     def getData(self):
@@ -26,7 +21,10 @@ class Dataset(ABC):
     @abstractmethod
     def parseFiles(self):
         pass
-
+    
+    def extractInfo(self):
+        pass
+    
     def __createCsvWriter(self, csvFileName, headerList):
         if csvFileName is None:
             csvFileName = self._csvFileName
@@ -61,8 +59,6 @@ class Dataset(ABC):
                 for elem in data:
                     row.append(elem.tolist())
                 writer.writerow(row)
-                
-        
     
     def readCsv(self, labelColumnName = 'label', csvFileName = None, headerList = None):
         if csvFileName is None:

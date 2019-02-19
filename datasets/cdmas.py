@@ -2,16 +2,11 @@ from .dataset import Dataset
 import tools.toolbox as tb
 from multiprocessing import Pool, cpu_count, Manager
 
-def parseFolder(folder, label, listLabel, listData):
+
+def parseFolder(folder, pplList, xplList):
     for i in range(1, 20):
-        x = tb.readImage(folder + 'x' + str(i) + '.png')
-        y = tb.readImage(folder + 'p' + str(i) + '.png')
-        data = []
-        data.append(tb.extractParams('', x))
-        data.append(tb.extractParams('', y))
-        listLabel.append(label)
-        listData.append(data)
-            
+        xplList.append(tb.readImage(folder + 'x' + str(i) + '.png'))
+        pplList.append(tb.readImage(folder + 'p' + str(i) + '.png'))
 
 class CDMas(Dataset):
     def __init__(self, paramNames = None, csvFileName = None):
@@ -57,18 +52,21 @@ class CDMas(Dataset):
 
     def parseFiles(self):
         with Manager() as manager:
-            labelList = manager.list()
-            dataList = manager.list()
-
             base_path = './MIfile/MI'
             threads = []
             pool = Pool()
+            ppl = [manager.list() for x in range(84)]
+            xpl = [manager.list() for x in range(84)]
+            labels = []
             for i in range(1, 84):
                 folder = base_path + str(i) + '/'
-                label = self.__getLabelFromFolder(i)
-                threads.append(pool.apply_async(parseFolder, (folder, label, labelList, dataList)))
+                labels.append(self.__getLabelFromFolder(i))
+                threads.append(pool.apply_async(parseFolder, (folder, ppl[i], xpl[i])))
             pool.close()
             [t.get() for t in threads]
-            for label, data in zip(labelList, dataList):
-                self._label.append(label)
-                self._data.append(data)
+            # Now it normalizes the data for the object attributes
+            for xplFolderList, pplFolderList, label in zip(xpl, ppl, labels):
+                self._label = label
+                self._xpl.append(xplFolderList)
+                self._ppl.append(pplFolderList)
+                
