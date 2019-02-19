@@ -17,6 +17,7 @@ class Dataset(ABC):
 
     def getData(self):
         return self._data, self._label
+        pass
 
     @abstractmethod
     def parseFiles(self):
