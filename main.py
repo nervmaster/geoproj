@@ -6,6 +6,7 @@ print("Hello World!")
 ds = CDMas(csvFileName = "hello.csv", paramNames = ['avg_color_xpl', 'avg_color_ppl'])
 ds.parseFiles()
 ds.extractInfo()
+print(ds.getData())
 
 # ds = CDGeo(csvFileName = "cdgeo.csv", paramNames = ['avg_color_xpl', 'avg_color_ppl'])
 # ds.parseFiles()

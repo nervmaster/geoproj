@@ -12,12 +12,20 @@ class Dataset(ABC):
         self._csvFileName = csvFileName
 
     def getData(self):
-        pass
+        allData = []
+        for unit in self._units:
+            singleData = []
+            unitData = unit.getData()
+            unitLabel = unit.getLabel()
+            if(Param.AVERAGE in unitData):
+                singleData.append(unitData[Param.AVERAGE])
+            allData.append((unitLabel, singleData))
+        return allData
 
     @abstractmethod
     def parseFiles(self):
         pass
-    
+
     def extractInfo(self):
         for unit in self._units:
             unit.extract(Param.AVERAGE)
