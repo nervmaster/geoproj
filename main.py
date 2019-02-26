@@ -1,18 +1,21 @@
 from datasets.cdmas import CDMas
 from datasets.cdgeo import CDGeo
 from learning.knn import Knn
+from learning.dtree import DTree
+from learning.random import RandomClassifier
 
 print("Hello World!")
 
-ds = CDMas(csvFileName = "hello.csv", paramNames = ['avg_color_xpl', 'avg_color_ppl'])
+ds = CDMas(csvFileName = "hello.csv")
 ds.parseFiles()
 ds.extractInfo()
-print('knn = 1')
 knn = Knn(1)
 knn.crossValidate(ds,10)
-print('knn = 3')
-knn = Knn(3)
-knn.crossValidate(ds,10)
+dtree = DTree()
+dtree.crossValidate(ds,10)
+random = RandomClassifier()
+random.crossValidate(ds,10)
+
 # ds = CDGeo(csvFileName = "cdgeo.csv", paramNames = ['avg_color_xpl', 'avg_color_ppl'])
 # ds.parseFiles()
 # ds.writeCsv()
