@@ -24,6 +24,6 @@ class MineralUnit(Unit):
         data = self._data
         avg = Param.AVERAGE
         data[avg] = []
-        data[avg].append(np.average(np.average(self._ppl)))
-        data[avg].append(np.average(np.average(self._xpl)))
+        data[avg].append(np.average(np.average(self._ppl, axis=0), axis=0))
+        data[avg].append(np.average(np.average(self._xpl, axis=0), axis=0))
         self._data = data

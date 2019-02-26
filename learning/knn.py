@@ -22,7 +22,6 @@ class Knn(MachineLearning):
         for i in range(n_slices):
             up = (i+1)*units_slice
             down = i*units_slice
-            print(down, up)
             labels = np.array(data[0])
             info = np.array(data[1])
             if i < n_slices-1:
@@ -42,9 +41,9 @@ class Knn(MachineLearning):
                 correct = i[0]
                 guessed = impl.predict(i[1])
 
-                if(correct == guessed):
+                if correct in guessed:
                     bingo += 1
-        print(cont,bingo)
+        print(bingo/cont*100,'%')
 
     def _inst(self):
         return neighbors.KNeighborsClassifier(n_neighbors=self._n_neighbors)

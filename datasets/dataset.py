@@ -4,6 +4,7 @@ import tools.toolbox as tb
 import csv
 from multiprocessing import Pool, cpu_count, Manager
 from datasets.units.unit import Unit
+import itertools
 
 class Dataset(ABC):
     def __init__(self, csvFileName = None, paramNames = None):
@@ -12,15 +13,18 @@ class Dataset(ABC):
         self._csvFileName = csvFileName
 
     def getData(self):
-        allData = []
+        all_data = []
         for unit in self._units:
-            singleData = []
-            unitData = unit.getData()
-            unitLabel = unit.getLabel()
-            if(Param.AVERAGE in unitData):
-                singleData.append(unitData[Param.AVERAGE])
-            allData.append((unitLabel, singleData))
-        return allData
+            single_data = []
+            unit_data = unit.getData()
+            unit_label = unit.getLabel()
+            if(Param.AVERAGE in unit_data):
+                single_data.append(unit_data[Param.AVERAGE])
+            flatten_data = [item for sublist in single_data for item in sublist]
+            all_data.append((unit_label, flatten_data))
+        return all_data
+         
+
 
     @abstractmethod
     def parseFiles(self):
