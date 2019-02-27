@@ -3,6 +3,7 @@ class Param(Enum):
     # Parameters
     AVERAGE = 'avg'
     PLEOCHROISM = 'pleo'
+    OPACITY = 'opa'
 
 class ColorFormat(Enum):
     LAB = 'lab'

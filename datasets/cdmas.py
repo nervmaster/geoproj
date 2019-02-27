@@ -7,9 +7,9 @@ from tools.param_enum import LightType
 
 def parseFolder(folder, unitList, label, color_format):
     for i in range(1, 20):
-        unit = MineralUnit(label)
-        unit.readImage(folder + 'p' + str(i) + '.png', LightType.PPL, color_format)
-        unit.readImage(folder + 'x' + str(i) + '.png', LightType.XPL, color_format)
+        unit = MineralUnit(label, color_format)
+        unit.readImage(folder + 'p' + str(i) + '.png', LightType.PPL)
+        unit.readImage(folder + 'x' + str(i) + '.png', LightType.XPL)
         unitList.append(unit)
 
 class CDMas(Dataset):
@@ -54,7 +54,7 @@ class CDMas(Dataset):
         else:
             return 'Garnet'
 
-    def parseFiles(self, color_format):
+    def parseFiles(self):
         with Manager() as manager:
             base_path = './MIfile/MI'
             threads = []
@@ -63,7 +63,7 @@ class CDMas(Dataset):
             for i in range(1, 84):
                 folder = base_path + str(i) + '/'
                 label = self.__getLabelFromFolder(i)
-                threads.append(pool.apply_async(parseFolder, (folder, units, label, color_format)))
+                threads.append(pool.apply_async(parseFolder, (folder, units, label, self._colorFormat)))
             pool.close()
             [t.get() for t in threads]
             self._units = [x for x in units]   

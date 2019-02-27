@@ -7,10 +7,11 @@ from datasets.units.unit import Unit
 import itertools
 
 class Dataset(ABC):
-    def __init__(self, csvFileName = None, paramNames = None):
+    def __init__(self, csvFileName = None, paramNames = None, color_format = None):
         self._units = []
         self._paramNames = paramNames
         self._csvFileName = csvFileName
+        self._colorFormat = color_format
 
     def getData(self):
         all_data = []
@@ -27,7 +28,7 @@ class Dataset(ABC):
 
 
     @abstractmethod
-    def parseFiles(self, color_type):
+    def parseFiles(self):
         pass
 
     def extractInfo(self):

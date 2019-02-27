@@ -4,9 +4,10 @@ from multiprocessing import Pool, cpu_count, Manager
 
 
 class Unit(ABC):
-    def __init__(self, label = None):
+    def __init__(self, label = None, color_format = None):
         self._label = label
         self._data = dict()
+        self._color_format = color_format
     
     def getData(self):
         return self._data

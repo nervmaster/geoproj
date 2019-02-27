@@ -16,35 +16,20 @@ def runAll(ds):
 
 print("Hello World!")
 
-ds = CDMas()
-ds.parseFiles(ColorFormat.RGB)
+ds = CDMas(ColorFormat.RGB)
+ds.parseFiles()
 ds.extractInfo()
 runAll(ds)
 print('------------------ LAB')
-ds.parseFiles(ColorFormat.LAB)
+ds = CDMas(ColorFormat.LAB)
+ds.parseFiles()
 ds.extractInfo()
 runAll(ds)
 print('------------------ HSV')
-ds.parseFiles(ColorFormat.HSV)
+ds = CDMas(ColorFormat.HSV)
+ds.parseFiles()
 ds.extractInfo()
 runAll(ds)
-# ds = CDGeo(csvFileName = "cdgeo.csv", paramNames = ['avg_color_xpl', 'avg_color_ppl'])
-# ds.parseFiles()
-# ds.writeCsv()
-
-# from toolbox import *
-# from sklearn import neural_network, linear_model, svm, naive_bayes, neighbors, metrics, tree
-# import numpy as np
-# import scipy.stats as st
-# import csv
-# import itertools
-# import sys
-# from training import train, evaluate
-# from multiprocessing import Process, Lock, Queue, Pool, Manager
-# from functools import partial
-
-# # Todos os parametros disponiveis para extração
-# all_param = ['xpl', 'pleoc', 'biref', 'ppl', 'tex', 'opa']
 
 # # Os parâmetros usados na última iteração
 # singles = ['xpl', 'ppl', 'tex', 'opa']
