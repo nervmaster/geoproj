@@ -3,19 +3,31 @@ from datasets.cdgeo import CDGeo
 from learning.knn import Knn
 from learning.dtree import DTree
 from learning.random import RandomClassifier
+from tools.param_enum import ColorFormat
+
+def runAll(ds):
+    for i in range(1,10,2):
+        knn = Knn(i)
+        knn.crossValidate(ds,10)
+    dtree = DTree()
+    dtree.crossValidate(ds,10)
+    random = RandomClassifier()
+    random.crossValidate(ds,10)    
 
 print("Hello World!")
 
-ds = CDMas(csvFileName = "hello.csv")
-ds.parseFiles()
+ds = CDMas()
+ds.parseFiles(ColorFormat.RGB)
 ds.extractInfo()
-knn = Knn(1)
-knn.crossValidate(ds,10)
-dtree = DTree()
-dtree.crossValidate(ds,10)
-random = RandomClassifier()
-random.crossValidate(ds,10)
-
+runAll(ds)
+print('------------------ LAB')
+ds.parseFiles(ColorFormat.LAB)
+ds.extractInfo()
+runAll(ds)
+print('------------------ HSV')
+ds.parseFiles(ColorFormat.HSV)
+ds.extractInfo()
+runAll(ds)
 # ds = CDGeo(csvFileName = "cdgeo.csv", paramNames = ['avg_color_xpl', 'avg_color_ppl'])
 # ds.parseFiles()
 # ds.writeCsv()

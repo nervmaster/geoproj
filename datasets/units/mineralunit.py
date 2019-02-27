@@ -1,7 +1,7 @@
 from datasets.units.unit import Unit
 import cv2
 import numpy as np
-from tools.param_enum import Param
+from tools.param_enum import Param, LightType, ColorFormat
 
 class MineralUnit(Unit):
 
@@ -10,11 +10,19 @@ class MineralUnit(Unit):
         self._xpl = None
         self._ppl = None
 
-    def readXpl(self, path):
-        self._xpl = cv2.imread(path)
-
-    def readPpl(self, path):
-        self._ppl = cv2.imread(path)
+    def readImage(self, path, light_type, color_format):
+        image = cv2.imread(path)
+        if(color_format != ColorFormat.RGB):
+            image = np.float32(image)
+            image = image / 255.0
+            if(color_format == ColorFormat.LAB):
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+            elif(color_format == ColorFormat.HSV):
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV_FULL)
+        if(light_type == LightType.XPL):
+            self._xpl = image
+        else:
+            self._ppl = image
 
     def extract(self, paramName):
         if paramName == Param.AVERAGE:

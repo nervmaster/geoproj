@@ -27,7 +27,7 @@ class Dataset(ABC):
 
 
     @abstractmethod
-    def parseFiles(self):
+    def parseFiles(self, color_type):
         pass
 
     def extractInfo(self):
