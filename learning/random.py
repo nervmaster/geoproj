@@ -1,17 +1,12 @@
-from sklearn import tree
+from sklearn import dummy
 from learning.machineLearning import MachineLearning
-import random
 
 class RandomClassifier(MachineLearning):
-    def __init__(self):
-        self._y = None
+    def __init__(self, type = None):
+        self._type = None
         super().__init__('Random Classifier')
 
     def _inst(self):
-        return self
-    
-    def fit(self,X,y):
-        self._y = y
-    
-    def predict(self,a):
-        return self._y[random.randint(0, len(self._y)-1)]
+        if(self._type != None):
+            return dummy.DummyClassifier(self._type)
+        return dummy.DummyClassifier()

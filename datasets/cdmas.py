@@ -13,8 +13,8 @@ def parseFolder(folder, unitList, label, color_format):
         unitList.append(unit)
 
 class CDMas(Dataset):
-    def __init__(self, paramNames = None, csvFileName = None):
-        Dataset.__init__(self, paramNames = paramNames, csvFileName = csvFileName)
+    def __init__(self, color = None):
+        Dataset.__init__(self, color_format=color)
         
     def __getLabelFromFolder(self, folder):
         if folder <= 5:

@@ -5,12 +5,15 @@ import csv
 from multiprocessing import Pool, cpu_count, Manager
 from datasets.units.unit import Unit
 import itertools
+import matplotlib.pyplot as plt
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from sklearn.decomposition import PCA as sklearnPCA
+import numpy as np
+from collections import OrderedDict
 
 class Dataset(ABC):
-    def __init__(self, csvFileName = None, paramNames = None, color_format = None):
+    def __init__(self, color_format = None):
         self._units = []
-        self._paramNames = paramNames
-        self._csvFileName = csvFileName
         self._colorFormat = color_format
 
     def getData(self):
@@ -21,11 +24,26 @@ class Dataset(ABC):
             unit_label = unit.getLabel()
             if(Param.AVERAGE in unit_data):
                 single_data.append(unit_data[Param.AVERAGE])
-            flatten_data = [item for sublist in single_data for item in sublist]
-            all_data.append((unit_label, flatten_data))
-        return all_data
-         
-
+            flatten_data = [item for sublist in single_data for subsublist in sublist for item in subsublist]
+            all_data.append((np.asarray(unit_label), np.asarray(flatten_data)))
+        return np.asarray(all_data)
+    
+    def plot(self):
+        raw = self.getData()
+        y = [item[0] for item in raw]
+        X = [item[1] for item in raw]
+        
+        pca = sklearnPCA(n_components=2)
+        pca_transformed = pca.fit_transform(X)
+        
+        for i, label in enumerate(y):
+            plt.scatter(pca_transformed[i][0], pca_transformed[i][1], label=label)
+        
+        handles, labels = plt.gca().get_legend_handles_labels()
+        by_label = OrderedDict(zip(labels, handles))
+        plt.legend(by_label.values(), by_label.keys())
+        
+        plt.show()
 
     @abstractmethod
     def parseFiles(self):
