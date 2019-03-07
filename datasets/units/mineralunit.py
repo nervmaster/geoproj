@@ -31,11 +31,10 @@ class MineralUnit(Unit):
             self.__calculateAverage()
 
     def __hasLightChannel(self):
-        pass
+        if self._color_format not in [ColorFormat.HSV, ColorFormat.LAB]:
+            raise Exception('Color Format:' + self._color_format + 'does not have a lightning channel')
+        return True
         
-    def __calculateOpacity(self):
-        pass
-
     def __calculateAverage(self):
         data = self._data
         avg = Param.AVERAGE
