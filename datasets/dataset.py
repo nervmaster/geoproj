@@ -6,6 +6,7 @@ from multiprocessing import Pool, cpu_count, Manager
 from datasets.units.unit import Unit
 import itertools
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d, Axes3D
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.decomposition import PCA as sklearnPCA
 import numpy as np
@@ -33,11 +34,22 @@ class Dataset(ABC):
         y = [item[0] for item in raw]
         X = [item[1] for item in raw]
         
-        pca = sklearnPCA(n_components=2)
-        pca_transformed = pca.fit_transform(X)
-        
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        if(len(X[0]) > 3):
+            pca = sklearnPCA(n_components=2)
+            pca_transformed = pca.fit_transform(X)
+        elif(len(X[0]) == 3):
+            ax = Axes3D(fig)
+
         for i, label in enumerate(y):
-            plt.scatter(pca_transformed[i][0], pca_transformed[i][1], label=label)
+            if(len(X[i]) > 3):
+                ax.scatter(pca_transformed[i][0], pca_transformed[i][1], label=label)
+            elif(len(X[i] == 3)):
+                ax.scatter(X[i][0], X[i][1], X[i][2], label = label)
+            else:
+                ax.scatter(X[i][0], X[i][1], label = label)
         
         handles, labels = plt.gca().get_legend_handles_labels()
         by_label = OrderedDict(zip(labels, handles))

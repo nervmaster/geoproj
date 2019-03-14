@@ -1,5 +1,6 @@
 from datasets.cdmas import CDMas
 from datasets.cdgeo import CDGeo
+from datasets.cdmas_simple import CDMasSimple
 from learning.knn import Knn
 from learning.dtree import DTree
 from learning.random import RandomClassifier
@@ -15,6 +16,12 @@ def runAll(ds):
     random.crossValidate(ds,10)    
 
 print("Hello World!")
+ds = CDMasSimple(color = ColorFormat.RGB)
+ds.parseFiles()
+ds.extractInfo()
+ds.plot()
+exit(1)
+
 ds = CDMas(ColorFormat.RGB)
 ds.parseFiles()
 ds.extractInfo()
