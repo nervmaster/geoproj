@@ -4,7 +4,7 @@ from datasets.cdmas_simple import CDMasSimple
 from learning.knn import Knn
 from learning.dtree import DTree
 from learning.random import RandomClassifier
-from tools.param_enum import ColorFormat, LightType, Param
+from tools.enumerators import ColorFormat, LightType, Param
 
 def runAll(ds):
     for i in range(1,10,2):

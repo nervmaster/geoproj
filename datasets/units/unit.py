@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from tools.param_enum import Param
+from tools.enumerators import Param
 from multiprocessing import Pool, cpu_count, Manager
 
 

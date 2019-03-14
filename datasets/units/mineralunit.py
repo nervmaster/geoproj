@@ -1,7 +1,7 @@
 from datasets.units.unit import Unit
 import cv2
 import numpy as np
-from tools.param_enum import Param, LightType, ColorFormat
+from tools.enumerators import Param, LightType, ColorFormat
 
 class MineralUnit(Unit):
 

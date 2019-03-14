@@ -1,8 +1,7 @@
 from .dataset import Dataset
-import tools.toolbox as tb
 from multiprocessing import Pool, cpu_count, Manager
 from .units.mineralunit import MineralUnit
-from tools.param_enum import LightType
+from tools.enumerators import LightType
 
 
 def parseFolder(folder, unitList, label, color_format):

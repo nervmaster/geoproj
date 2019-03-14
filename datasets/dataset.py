@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from tools.param_enum import Param
-import tools.toolbox as tb
+from tools.enumerators import Param
 import csv
 from multiprocessing import Pool, cpu_count, Manager
 from datasets.units.unit import Unit
