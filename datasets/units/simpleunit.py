@@ -13,17 +13,26 @@ class SimpleUnit(Unit):
         image = cv2.imread(path)
         image = np.float32(image)
         image = image / 255.0
-        self._image = image
+        if(self._color_format == ColorFormat.LAB):
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+        elif(self._color_format == ColorFormat.HSV):
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        if(self._color_format == ColorFormat.RGB):
+            self._image = image
+        else:
+            self._image = image[:,:,1:3]
 
     def extract(self, paramName):
         if paramName == Param.AVERAGE:
-            self.__calculateAverage()
-        elif paramName == Param.OPACITY:
-            self.__calculateAverage()
+            self.__calculate(np.average)
+        elif paramName == Param.MEDIAN:
+            self.__calculate(np.median)
+        elif paramName == Param.MEAN:
+            self.__calculate(np.mean)
 
-    def __calculateAverage(self):
+    def __calculate(self, func):
         data = self._data
         avg = Param.AVERAGE
         data[avg] = []
-        data[avg].append(np.mean(np.mean(self._image, axis=0), axis=0))
+        data[avg].append(func(func(self._image, axis=0), axis=0))
         self._data = data

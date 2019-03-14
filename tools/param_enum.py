@@ -2,8 +2,9 @@ from enum import Enum
 class Param(Enum):
     # Parameters
     AVERAGE = 'avg'
-    PLEOCHROISM = 'pleo'
-    OPACITY = 'opa'
+    MEDIAN = 'median'
+    MEAN = 'mean'
+    ALL = 'all'
 
 class ColorFormat(Enum):
     LAB = 'lab'

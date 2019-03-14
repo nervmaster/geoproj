@@ -36,7 +36,6 @@ class Dataset(ABC):
         
         fig = plt.figure()
         ax = fig.add_subplot(111)
-
         if(len(X[0]) > 3):
             pca = sklearnPCA(n_components=2)
             pca_transformed = pca.fit_transform(X)
@@ -46,7 +45,7 @@ class Dataset(ABC):
         for i, label in enumerate(y):
             if(len(X[i]) > 3):
                 ax.scatter(pca_transformed[i][0], pca_transformed[i][1], label=label)
-            elif(len(X[i] == 3)):
+            elif(len(X[i]) == 3):
                 ax.scatter(X[i][0], X[i][1], X[i][2], label = label)
             else:
                 ax.scatter(X[i][0], X[i][1], label = label)
@@ -61,9 +60,14 @@ class Dataset(ABC):
     def parseFiles(self):
         pass
 
-    def extractInfo(self):
+    def extractInfo(self, param = Param.MEDIAN):
         for unit in self._units:
-            unit.extract(Param.AVERAGE)
+            if(Param.ALL or Param.AVERAGE):
+                unit.extract(Param.AVERAGE)
+            elif(Param.ALL or Param.MEDIAN):
+                unit.extract(Param.MEDIAN)
+            elif(Param.MEAN or Param.MEAN):
+                unit.extract(Param.MEAN)
 
     def __createCsvWriter(self, csvFileName, headerList):
         if csvFileName is None:

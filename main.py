@@ -4,7 +4,7 @@ from datasets.cdmas_simple import CDMasSimple
 from learning.knn import Knn
 from learning.dtree import DTree
 from learning.random import RandomClassifier
-from tools.param_enum import ColorFormat
+from tools.param_enum import ColorFormat, LightType, Param
 
 def runAll(ds):
     for i in range(1,10,2):
@@ -16,12 +16,11 @@ def runAll(ds):
     random.crossValidate(ds,10)    
 
 print("Hello World!")
-ds = CDMasSimple(color = ColorFormat.RGB)
+ds = CDMasSimple(color = ColorFormat.HSV, light_type = LightType.XPL)
 ds.parseFiles()
 ds.extractInfo()
 ds.plot()
-exit(1)
-
+print('------------------ RGB')
 ds = CDMas(ColorFormat.RGB)
 ds.parseFiles()
 ds.extractInfo()
